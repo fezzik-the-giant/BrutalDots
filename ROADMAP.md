@@ -15,7 +15,7 @@
 - [ ] [FEATURE] Advanced bluetooth GUI
 - [ ] [FEATURE] Screen recorder preferences
 - [ ] [FEATURE] Show/hide system tray icons
-- [ ] [FEATURE] Nightlight adjustment and scheduler
+- [x] [FEATURE] Nightlight adjustment and scheduler
 - [ ] [FEATURE] Allow selecting default apps during installation
 - [ ] [FEATURE] Driver config
 - [ ] [FEATURE] Updater

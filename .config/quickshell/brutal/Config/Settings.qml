@@ -173,6 +173,10 @@ Singleton {
             // ── Night light ────────────────────────────────────────────────
             property JsonObject nightLight: JsonObject {
                 property int temperature: 4000
+                property bool scheduleSunset: false
+                property bool scheduleCustom: false
+                property int customOn: 20
+                property int customOff: 7
             }
 
             // ── Screenshots and recordings ─────────────────────────────────

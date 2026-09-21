@@ -47,6 +47,38 @@ Singleton {
         if (root.enabled) root.apply();
     }
 
+    // ── Scheduler ──────────────────────────────────────────────────────────
+    readonly property bool scheduleSunset: Settings.data.nightLight.scheduleSunset
+    readonly property bool scheduleCustom: Settings.data.nightLight.scheduleCustom
+    readonly property int customOn: Settings.data.nightLight.customOn
+    readonly property int customOff: Settings.data.nightLight.customOff
+
+    readonly property bool isDay: Weather.isDay
+    readonly property int currentHour: Time.now.getHours()
+
+    function evaluateSchedule(): void {
+        if (root.scheduleSunset) {
+            if (root.isDay) root.disable();
+            else root.enable();
+        } else if (root.scheduleCustom) {
+            let active = false;
+            if (root.customOn < root.customOff) {
+                active = (root.currentHour >= root.customOn && root.currentHour < root.customOff);
+            } else {
+                active = (root.currentHour >= root.customOn || root.currentHour < root.customOff);
+            }
+            if (active) root.enable();
+            else root.disable();
+        }
+    }
+
+    onScheduleSunsetChanged: evaluateSchedule()
+    onScheduleCustomChanged: evaluateSchedule()
+    onCustomOnChanged: evaluateSchedule()
+    onCustomOffChanged: evaluateSchedule()
+    onIsDayChanged: evaluateSchedule()
+    onCurrentHourChanged: evaluateSchedule()
+
     Process {
         id: probe
 
