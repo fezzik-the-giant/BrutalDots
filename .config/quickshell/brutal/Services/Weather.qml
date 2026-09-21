@@ -21,6 +21,8 @@ Singleton {
     property real windSpeed: 0
     property int code: -1
     property bool isDay: true
+    property string sunrise: ""
+    property string sunset: ""
     property bool loaded: false
 
     readonly property bool metric: Settings.data.weatherMetric
@@ -130,18 +132,23 @@ Singleton {
             `curl -sf --max-time 10 "https://api.open-meteo.com/v1/forecast` +
             `?latitude=${root._lat}&longitude=${root._lon}` +
             `&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,is_day` +
+            `&daily=sunrise,sunset` +
             `&temperature_unit=${root.metric ? "celsius" : "fahrenheit"}` +
             `&wind_speed_unit=${root.metric ? "kmh" : "mph"}&timezone=auto"`]
         stdout: StdioCollector {
             onStreamFinished: {
                 try {
-                    const c = JSON.parse(text)?.current;
+                    const parsed = JSON.parse(text);
+                    const c = parsed?.current;
+                    const d = parsed?.daily;
                     if (!c) return;
                     root.temperature = c.temperature_2m ?? 0;
                     root.humidity = c.relative_humidity_2m ?? 0;
                     root.windSpeed = c.wind_speed_10m ?? 0;
                     root.code = c.weather_code ?? -1;
                     root.isDay = (c.is_day ?? 1) === 1;
+                    if (d && d.sunrise && d.sunrise.length > 0) root.sunrise = d.sunrise[0];
+                    if (d && d.sunset && d.sunset.length > 0) root.sunset = d.sunset[0];
                     root.loaded = true;
                 } catch (e) {
                     console.warn("Weather: forecast failed:", e);
