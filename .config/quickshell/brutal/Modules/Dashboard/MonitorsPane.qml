@@ -46,7 +46,6 @@ ColumnLayout {
                         text: "Monitors & Workspaces"
                         font.pixelSize: Theme.font.size.xl
                         font.weight: Theme.font.weight.bold
-                        color: Theme.color.text
                         Layout.fillWidth: true
                     }
 
@@ -83,7 +82,7 @@ ColumnLayout {
                         Grid {
                             anchors.centerIn: parent
                             rows: 15; columns: 30; spacing: 20
-                            Repeater { model: 450; Rectangle { width: 2; height: 2; radius: 1; color: Qt.alpha(Theme.color.text, 0.07) } }
+                            Repeater { model: 450; Rectangle { width: 2; height: 2; radius: 1; color: Qt.alpha(Theme.color.ink, 0.07) } }
                         }
 
                     property real targetScale: {
@@ -153,9 +152,9 @@ ColumnLayout {
                                     width: monDelegateItem.cardW
                                     height: monDelegateItem.cardH
                                     radius: Theme.radius.md
-                                    color: isActive ? Theme.color.surface1 : Theme.color.crust
-                                    border.color: isActive ? Monitors.selectedResAccent : Theme.color.surface2
-                                    border.width: isActive ? 2 : 1
+                                    color: isActive ? Theme.color.base : Theme.color.crust
+                                    border.color: isActive ? Monitors.selectedResAccent : Theme.color.ink
+                                    border.width: Theme.border.width
                                     z: isActive ? 5 : 0
                                     Behavior on x { NumberAnimation { duration: 300; easing.type: Easing.OutQuint } }
                                     Behavior on y { NumberAnimation { duration: 300; easing.type: Easing.OutQuint } }
@@ -182,7 +181,7 @@ ColumnLayout {
                                             BrutalIcon {
                                                 Layout.alignment: Qt.AlignHCenter
                                                 font.pixelSize: 26
-                                                color: isActive ? Monitors.selectedResAccent : Theme.color.text
+                                                color: isActive ? Monitors.selectedResAccent : Theme.color.ink
                                                 text: Icons.monitor
                                                 Behavior on color { ColorAnimation { duration: 300 } }
                                             }
@@ -190,13 +189,13 @@ ColumnLayout {
                                                 Layout.alignment: Qt.AlignHCenter
                                                 font.weight: Theme.font.weight.black
                                                 font.pixelSize: 10
-                                                color: Theme.color.text
+                                                color: Theme.color.ink
                                                 text: model.name
                                             }
                                             BrutalText {
                                                 Layout.alignment: Qt.AlignHCenter
                                                 font.pixelSize: 9
-                                                color: Theme.color.subtext0
+                                                color: Theme.color.subtext
                                                 text: model.resW + "×" + model.resH + "@" + model.rate
                                             }
                                         }
@@ -298,8 +297,8 @@ ColumnLayout {
                             Layout.preferredHeight: 120
                             Layout.alignment: Qt.AlignVCenter
                             radius: width / 2
-                            color: Theme.color.surface0
-                            border.color: Theme.color.surface1
+                            color: Theme.color.base
+                            border.color: Theme.color.ink
                             border.width: 2
 
                             Repeater {
@@ -311,7 +310,7 @@ ColumnLayout {
                                         width: index % 3 === 0 ? 3 : 2
                                         height: index % 3 === 0 ? 8 : 4
                                         radius: width / 2
-                                        color: index % 3 === 0 ? Theme.color.subtext0 : Theme.color.surface2
+                                        color: index % 3 === 0 ? Theme.color.subtext : Theme.color.grey
                                         anchors.top: parent.top
                                         anchors.topMargin: 6
                                         anchors.horizontalCenter: parent.horizontalCenter
@@ -323,7 +322,8 @@ ColumnLayout {
                                 anchors.fill: parent
                                 property int tf: {
                                     let _ = Monitors.changeTrigger;
-                                    return Monitors.monitorsModel.count > 0 ? Monitors.monitorsModel.get(Monitors.activeEditIndex).transform : 0;
+                                    let m = Monitors.current();
+                                    return m ? m.transform : 0;
                                 }
                                 rotation: tf * 90
                                 Behavior on rotation { NumberAnimation { duration: 400; easing.type: Easing.OutBack } }
@@ -353,13 +353,15 @@ ColumnLayout {
                                     let cx = width / 2; let cy = height / 2;
                                     let dx = mouse.x - cx; let dy = mouse.y - cy;
                                     if (Math.hypot(dx, dy) < 18) return;
-                                    let tf = Monitors.monitorsModel.get(Monitors.activeEditIndex).transform;
+                                    let cur = Monitors.current();
+                                    if (!cur) return;
+                                    let tf = cur.transform;
                                     let angle = tf * Math.PI / 2;
                                     let rdx = dx * Math.cos(-angle) - dy * Math.sin(-angle);
                                     let rdy = dx * Math.sin(-angle) + dy * Math.cos(-angle);
                                     let rawSnap = Math.abs(rdx) > Math.abs(rdy) ? (rdx > 0 ? 1 : 3) : (rdy > 0 ? 2 : 0);
                                     let snap = (rawSnap + tf) % 4;
-                                    Monitors.monitorsModel.setProperty(Monitors.activeEditIndex, "transform", snap);
+                                    Monitors.monitorsModel.setProperty(Monitors.currentIndex(), "transform", snap);
                                     Monitors.changeTrigger++;
                                     Monitors.delayedLayoutUpdate.restart();
                                 }
@@ -375,11 +377,11 @@ ColumnLayout {
                             BrutalText {
                                 text: {
                                     let _ = Monitors.changeTrigger;
-                                    return Monitors.monitorsModel.count > 0 ? Monitors.monitorsModel.get(Monitors.activeEditIndex).name + " Configuration" : "";
+                                    let m = Monitors.current();
+                                    return m ? m.name + " Configuration" : "";
                                 }
                                 font.pixelSize: Theme.font.size.lg
                                 font.weight: Theme.font.weight.bold
-                                color: Theme.color.text
                             }
 
                             RowLayout {
@@ -390,31 +392,28 @@ ColumnLayout {
                                     
                                     property bool isPrimarySelected: {
                                         let _ = Monitors.changeTrigger;
-                                        return Monitors.monitorsModel.count > 0 && Monitors.monitorsModel.get(Monitors.activeEditIndex).isPrimary;
+                                        let m = Monitors.current();
+                                        return m ? m.isPrimary : false;
                                     }
                                     
-                                    baseColor: isPrimarySelected ? Theme.color.yellow : Theme.color.surface1
-                                    hoverColor: isPrimarySelected ? Theme.color.yellow : Theme.color.surface2
+                                    baseColor: isPrimarySelected ? Theme.color.yellow : Theme.color.base
+                                    hoverColor: isPrimarySelected ? Theme.color.yellow : Theme.color.surface
                                     shadowed: !isPrimarySelected
                                     
                                     RowLayout {
                                         anchors.centerIn: parent
                                         spacing: Theme.space.sm
-                                        BrutalIcon { 
-                                            text: Icons.star; 
-                                            color: parent.parent.isPrimarySelected ? Theme.color.crust : Theme.color.text 
-                                        }
-                                        BrutalText { 
-                                            text: parent.parent.isPrimarySelected ? "Primary" : "Set Primary"; 
-                                            font.weight: Theme.font.weight.bold; 
-                                            color: parent.parent.isPrimarySelected ? Theme.color.crust : Theme.color.text 
+                                        BrutalIcon { text: Icons.star }
+                                        BrutalText {
+                                            text: parent.parent.isPrimarySelected ? "Primary" : "Set Primary"
+                                            font.weight: Theme.font.weight.bold
                                         }
                                     }
 
                                     onClicked: {
                                         if (Monitors.monitorsModel.count === 0) return;
                                         for(let i=0; i<Monitors.monitorsModel.count; i++) {
-                                            Monitors.monitorsModel.setProperty(i, "isPrimary", i === Monitors.activeEditIndex);
+                                            Monitors.monitorsModel.setProperty(i, "isPrimary", i === Monitors.currentIndex());
                                         }
                                         Monitors.changeTrigger++;
                                     }
@@ -428,7 +427,7 @@ ColumnLayout {
                                 Layout.preferredHeight: 36
                                 property var currentMonitor: {
                                     let _ = Monitors.changeTrigger;
-                                    return Monitors.monitorsModel.count > 0 ? Monitors.monitorsModel.get(Monitors.activeEditIndex) : null;
+                                    return Monitors.current();
                                 }
                                 property var allModes: currentMonitor ? JSON.parse(currentMonitor.availableModes || "[]") : []
                                 property var availableResolutions: {
@@ -456,37 +455,37 @@ ColumnLayout {
                                 RowLayout {
                                     anchors.fill: parent
                                     spacing: Theme.space.md
-                                    BrutalText { text: "Res:"; font.pixelSize: Theme.font.size.md; color: Theme.color.subtext0 }
+                                    BrutalText { text: "Res:"; font.pixelSize: Theme.font.size.md; color: Theme.color.subtext }
                                     ComboBox {
                                         id: resCombo
                                         Layout.preferredWidth: 135
                                         Layout.preferredHeight: 36
                                         model: resConfigItem.availableResolutions
                                         currentIndex: Math.max(0, resConfigItem.availableResolutions.indexOf(resConfigItem.currentRes))
-                                        background: Rectangle { color: Theme.color.surface0; border.color: Theme.color.surface2; border.width: 1; radius: Theme.radius.sm }
-                                        contentItem: Text { text: resCombo.currentText; color: Theme.color.text; verticalAlignment: Text.AlignVCenter; horizontalAlignment: Text.AlignHCenter; font.family: "JetBrains Mono"; font.pixelSize: 13 }
+                                        background: Rectangle { color: Theme.color.base; border.color: Theme.color.ink; border.width: Theme.border.width; radius: Theme.radius.sm }
+                                        contentItem: Text { text: resCombo.currentText; color: Theme.color.ink; verticalAlignment: Text.AlignVCenter; horizontalAlignment: Text.AlignHCenter; font.family: "JetBrains Mono"; font.pixelSize: 13 }
                                         onActivated: {
                                             if (resConfigItem.currentMonitor) {
                                                 let parts = currentText.split("x");
-                                                Monitors.monitorsModel.setProperty(Monitors.activeEditIndex, "resW", parseInt(parts[0]));
-                                                Monitors.monitorsModel.setProperty(Monitors.activeEditIndex, "resH", parseInt(parts[1]));
+                                                Monitors.monitorsModel.setProperty(Monitors.currentIndex(), "resW", parseInt(parts[0]));
+                                                Monitors.monitorsModel.setProperty(Monitors.currentIndex(), "resH", parseInt(parts[1]));
                                                 Monitors.changeTrigger++;
                                                 Monitors.delayedLayoutUpdate.restart();
                                             }
                                         }
                                     }
-                                    BrutalText { text: "Hz:"; font.pixelSize: Theme.font.size.md; color: Theme.color.subtext0 }
+                                    BrutalText { text: "Hz:"; font.pixelSize: Theme.font.size.md; color: Theme.color.subtext }
                                     ComboBox {
                                         id: rateCombo
                                         Layout.preferredWidth: 70
                                         Layout.preferredHeight: 36
                                         model: resConfigItem.availableRates
                                         currentIndex: Math.max(0, resConfigItem.availableRates.indexOf(resConfigItem.currentRate))
-                                        background: Rectangle { color: Theme.color.surface0; border.color: Theme.color.surface2; border.width: 1; radius: Theme.radius.sm }
-                                        contentItem: Text { text: rateCombo.currentText; color: Theme.color.text; verticalAlignment: Text.AlignVCenter; horizontalAlignment: Text.AlignHCenter; font.family: "JetBrains Mono"; font.pixelSize: 13 }
+                                        background: Rectangle { color: Theme.color.base; border.color: Theme.color.ink; border.width: Theme.border.width; radius: Theme.radius.sm }
+                                        contentItem: Text { text: rateCombo.currentText; color: Theme.color.ink; verticalAlignment: Text.AlignVCenter; horizontalAlignment: Text.AlignHCenter; font.family: "JetBrains Mono"; font.pixelSize: 13 }
                                         onActivated: {
                                             if (resConfigItem.currentMonitor) {
-                                                Monitors.monitorsModel.setProperty(Monitors.activeEditIndex, "rate", currentText);
+                                                Monitors.monitorsModel.setProperty(Monitors.currentIndex(), "rate", currentText);
                                                 Monitors.changeTrigger++;
                                                 Monitors.delayedLayoutUpdate.restart();
                                             }
@@ -501,50 +500,30 @@ ColumnLayout {
                                 BrutalText {
                                     text: "Workspaces:"
                                     font.pixelSize: Theme.font.size.md
-                                    color: Theme.color.subtext0
+                                    color: Theme.color.subtext
                                 }
                                 
-                                Rectangle {
+                                BrutalTextField {
+                                    id: wsInput
                                     Layout.preferredWidth: 180
-                                    Layout.preferredHeight: 36
-                                    color: Theme.color.surface0
-                                    border.color: wsInput.activeFocus ? Monitors.selectedResAccent : Theme.color.surface2
-                                    border.width: 1
-                                    radius: Theme.radius.sm
-                                    
-                                    TextInput {
-                                        id: wsInput
-                                        anchors.fill: parent
-                                        anchors.margins: Theme.space.sm
-                                        verticalAlignment: TextInput.AlignVCenter
-                                        font.family: "JetBrains Mono"
-                                        font.pixelSize: Theme.font.size.md
-                                        color: Theme.color.text
-                                        clip: true
-                                        selectByMouse: true
-                                        
-                                        property string modelText: {
-                                            let _ = Monitors.changeTrigger;
-                                            return Monitors.monitorsModel.count > 0 ? Monitors.monitorsModel.get(Monitors.activeEditIndex).workspaces : "";
-                                        }
-                                        
-                                        onModelTextChanged: {
-                                            if (text !== modelText) text = modelText;
-                                        }
-                                        
-                                        onTextChanged: {
-                                            if (activeFocus && Monitors.monitorsModel.count > 0) {
-                                                Monitors.monitorsModel.setProperty(Monitors.activeEditIndex, "workspaces", text);
-                                            }
-                                        }
-                                        
-                                        BrutalText {
-                                            anchors.left: parent.left
-                                            anchors.verticalCenter: parent.verticalCenter
-                                            text: "e.g. 1-5, 9"
-                                            color: Qt.alpha(Theme.color.subtext0, 0.45)
-                                            visible: !parent.text && !parent.activeFocus
-                                        }
+                                    implicitHeight: 36
+                                    placeholder: "e.g. 1-5, 9"
+
+                                    /// The model is the source of truth; this
+                                    /// mirrors it in without fighting typing.
+                                    property string modelText: {
+                                        let _ = Monitors.changeTrigger;
+                                        let m = Monitors.current();
+                                        return m ? m.workspaces : "";
+                                    }
+
+                                    onModelTextChanged: {
+                                        if (text !== modelText) text = modelText;
+                                    }
+
+                                    onTextChanged: {
+                                        if (text !== modelText)
+                                            Monitors.monitorsModel.setProperty(Monitors.currentIndex(), "workspaces", text);
                                     }
                                 }
                             }

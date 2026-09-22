@@ -21,6 +21,20 @@ Singleton {
     property int changeTrigger: 0
     property color selectedResAccent: Theme.color.mint
 
+    /// activeEditIndex can outlive the row it names: displayPoller clears the
+    /// model and appends rows one at a time, and bindings re-evaluate on every
+    /// append, so a stale index is out of range until the focused row is
+    /// reached. Clamping in one place beats guarding each call site.
+    function currentIndex(): int {
+        return Math.max(0, Math.min(root.activeEditIndex, root.monitorsModel.count - 1));
+    }
+
+    /// The row activeEditIndex names, or null when there are no monitors.
+    function current() {
+        if (root.monitorsModel.count === 0) return null;
+        return root.monitorsModel.get(root.currentIndex());
+    }
+
     function isOverlapping(ax, ay, aw, ah, bx, by, bw, bh) {
         return ax < bx + bw && ax + aw > bx && ay < by + bh && ay + ah > by;
     }
@@ -63,7 +77,7 @@ Singleton {
 
     function forceLayoutUpdate() {
         if (root.monitorsModel.count < 2) return;
-        let mIdx = root.activeEditIndex;
+        let mIdx = root.currentIndex();
         let mModel = root.monitorsModel.get(mIdx);
         let isP = mModel.transform === 1 || mModel.transform === 3;
         let mW = ((isP ? mModel.resH : mModel.resW) / mModel.sysScale) * root.uiScale;
@@ -153,6 +167,7 @@ Singleton {
                     x: m.uiX / root.uiScale, y: m.uiY / root.uiScale, 
                     w: physW, h: physH, resW: m.resW, resH: m.resH, 
                     name: m.name, rate: m.rate, sysScale: m.sysScale, 
+                    availableModes: m.availableModes, 
                     transform: m.transform, isPrimary: m.isPrimary, workspaces: m.workspaces 
                 });
             }
@@ -182,8 +197,12 @@ Singleton {
             }
             
             let finalMinX = 999999, finalMinY = 999999;
-            luaCode = `
-local function bind_ws(w, m)
+            // Two files, each with its existing owner: hyprland.lua loads
+            // monitors.lua and workspaces.lua separately, and nwg-displays
+            // rewrites monitors.lua wholesale — workspace rules put in there
+            // would be silently dropped the next time it runs.
+            luaCode = "";
+            let wsLua = `local function bind_ws(w, m)
     hl.workspace_rule({ workspace = tostring(w), monitor = m })
 end
 `;
@@ -200,27 +219,49 @@ end
                 r.x = Math.round(r.x - finalMinX);
                 r.y = Math.round(r.y - finalMinY);
                 
-                luaCode += `hl.monitor({ output = "${r.name}", mode = "${r.resW}x${r.resH}@${r.rate}", position = "${r.x}x${r.y}", scale = ${r.sysScale}`;
+                // The advertised rate, not the rounded display one: "@60"
+                // names no mode on a 59.951Hz panel.
+                let modeRate = r.rate;
+                try {
+                    let modes = JSON.parse(r.availableModes || "[]");
+                    let prefix = r.resW + "x" + r.resH + "@";
+                    for (let mi = 0; mi < modes.length; mi++) {
+                        if (modes[mi].indexOf(prefix) !== 0) continue;
+                        let exact = parseFloat(modes[mi].substring(prefix.length));
+                        if (Math.round(exact).toString() === r.rate) {
+                            modeRate = exact.toString();
+                            break;
+                        }
+                    }
+                } catch (e) {
+                    // availableModes absent or malformed: the rounded rate is
+                    // the best we have, and Hyprland will pick the nearest.
+                }
+                luaCode += `hl.monitor({ output = "${r.name}", mode = "${r.resW}x${r.resH}@${modeRate}", position = "${r.x}x${r.y}", scale = ${r.sysScale}`;
                 if (r.transform !== 0) {
                     luaCode += `, transform = ${r.transform}`;
                 }
                 luaCode += ` });\n`;
                 
                 if (r.workspaces) {
+                    // Validated, not trusted: this is a free-text field and the
+                    // result is written into a shell command. Anything that is
+                    // not a bare id or an id range is dropped.
                     let groups = r.workspaces.split(/[, ]+/);
                     for (let g of groups) {
                         if (!g) continue;
+                        if (!/^\d+(-\d+)?$/.test(g)) continue;
                         if (g.indexOf("-") !== -1) {
                             let bounds = g.split("-");
                             let start = parseInt(bounds[0]);
                             let end = parseInt(bounds[1]);
                             if (!isNaN(start) && !isNaN(end) && start <= end) {
                                 for (let w = start; w <= end; w++) {
-                                    luaCode += `bind_ws("${w}", "${r.name}")\n`;
+                                    wsLua += `bind_ws("${w}", "${r.name}")\n`;
                                 }
                             }
                         } else {
-                            luaCode += `bind_ws("${g}", "${r.name}")\n`;
+                            wsLua += `bind_ws("${g}", "${r.name}")\n`;
                         }
                     }
                 }
@@ -228,15 +269,36 @@ end
                 summaryString += r.name + " ";
             }
             
-            let fullCmd = `echo '${luaCode}' > ~/.config/hypr/monitors.lua ; hyprctl eval 'package.loaded["monitors"] = nil' ; hyprctl reload`;
+            // isPrimary is only seeded from the pre-drag coordinates, and the
+            // layout is renormalised above, so an explicit choice wins and
+            // otherwise whoever lands on the origin is primary.
+            if (primaryMonitorName === "") {
+                for (let i = 0; i < rects.length; i++) {
+                    if (rects[i].x === 0 && rects[i].y === 0) {
+                        primaryMonitorName = rects[i].name;
+                        break;
+                    }
+                }
+            }
+
+            // A quoted here-doc delimiter: nothing in the body is expanded, and
+            // generated Lua cannot terminate the quoting the way a single
+            // quote inside echo '...' could.
+            function writeFile(path, body) {
+                return `cat > ${path} <<'BRUTALDOTS_LUA'\n${body}\nBRUTALDOTS_LUA\n`;
+            }
+
+            let fullCmd = writeFile("~/.config/hypr/monitors.lua", luaCode)
+                        + writeFile("~/.config/hypr/workspaces.lua", wsLua)
+                        + `hyprctl eval 'package.loaded["monitors"] = nil'`
+                        + ` ; hyprctl eval 'package.loaded["workspaces"] = nil'`
+                        + ` ; hyprctl reload`;
             
-            if (primaryMonitorName !== "") {
+            if (/^[A-Za-z0-9_.-]+$/.test(primaryMonitorName)) {
                 fullCmd += " ; xrandr --output " + primaryMonitorName + " --primary";
             }
             
             fullCmd += " ; if pgrep -x awww-daemon >/dev/null; then awww kill; sleep 0.2; awww-daemon & elif pgrep -x swww-daemon >/dev/null; then swww kill; sleep 0.2; swww-daemon & fi";
-            
-            console.log("EXEC:", fullCmd);
             
             Quickshell.execDetached(["sh", "-c", fullCmd]);
             Quickshell.execDetached(["notify-send", "Display Update", "Applied layout for: " + summaryString.trim()]);
