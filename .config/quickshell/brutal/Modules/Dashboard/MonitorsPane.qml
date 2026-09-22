@@ -1,5 +1,4 @@
 import QtQuick
-import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Widgets
@@ -74,17 +73,6 @@ ColumnLayout {
                     Layout.preferredHeight: 300
                     clip: true
 
-                    Item {
-                        Layout.fillWidth: true
-                        Layout.fillHeight: true
-
-                        // Dot grid background
-                        Grid {
-                            anchors.centerIn: parent
-                            rows: 15; columns: 30; spacing: 20
-                            Repeater { model: 450; Rectangle { width: 2; height: 2; radius: 1; color: Qt.alpha(Theme.color.ink, 0.07) } }
-                        }
-
                     property real targetScale: {
                         let _ = Monitors.changeTrigger;
                         if (Monitors.monitorsModel.count < 2) return 1.0;
@@ -125,6 +113,18 @@ ColumnLayout {
                         }
                         return (multiMonContainer.height / 2) - ((minY + (maxY - minY) / 2) * targetScale);
                     }
+
+                    Item {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+
+                        // Dot grid background
+                        Grid {
+                            anchors.centerIn: parent
+                            rows: 15; columns: 30; spacing: 20
+                            Repeater { model: 450; Rectangle { width: 2; height: 2; radius: 1; color: Qt.alpha(Theme.color.ink, 0.07) } }
+                        }
+
 
                     Item {
                         id: monTransformNode
@@ -456,17 +456,17 @@ ColumnLayout {
                                     anchors.fill: parent
                                     spacing: Theme.space.md
                                     BrutalText { text: "Res:"; font.pixelSize: Theme.font.size.md; color: Theme.color.subtext }
-                                    ComboBox {
+                                    BrutalDropdown {
                                         id: resCombo
                                         Layout.preferredWidth: 135
-                                        Layout.preferredHeight: 36
                                         model: resConfigItem.availableResolutions
                                         currentIndex: Math.max(0, resConfigItem.availableResolutions.indexOf(resConfigItem.currentRes))
-                                        background: Rectangle { color: Theme.color.base; border.color: Theme.color.ink; border.width: Theme.border.width; radius: Theme.radius.sm }
-                                        contentItem: Text { text: resCombo.currentText; color: Theme.color.ink; verticalAlignment: Text.AlignVCenter; horizontalAlignment: Text.AlignHCenter; font.family: "JetBrains Mono"; font.pixelSize: 13 }
-                                        onActivated: {
+                                        // The chosen row, not currentText:
+                                        // currentIndex is the consumer's
+                                        // binding and has not re-evaluated yet.
+                                        onActivated: index => {
                                             if (resConfigItem.currentMonitor) {
-                                                let parts = currentText.split("x");
+                                                let parts = resConfigItem.availableResolutions[index].split("x");
                                                 Monitors.monitorsModel.setProperty(Monitors.currentIndex(), "resW", parseInt(parts[0]));
                                                 Monitors.monitorsModel.setProperty(Monitors.currentIndex(), "resH", parseInt(parts[1]));
                                                 Monitors.changeTrigger++;
@@ -475,17 +475,14 @@ ColumnLayout {
                                         }
                                     }
                                     BrutalText { text: "Hz:"; font.pixelSize: Theme.font.size.md; color: Theme.color.subtext }
-                                    ComboBox {
+                                    BrutalDropdown {
                                         id: rateCombo
                                         Layout.preferredWidth: 70
-                                        Layout.preferredHeight: 36
                                         model: resConfigItem.availableRates
                                         currentIndex: Math.max(0, resConfigItem.availableRates.indexOf(resConfigItem.currentRate))
-                                        background: Rectangle { color: Theme.color.base; border.color: Theme.color.ink; border.width: Theme.border.width; radius: Theme.radius.sm }
-                                        contentItem: Text { text: rateCombo.currentText; color: Theme.color.ink; verticalAlignment: Text.AlignVCenter; horizontalAlignment: Text.AlignHCenter; font.family: "JetBrains Mono"; font.pixelSize: 13 }
-                                        onActivated: {
+                                        onActivated: index => {
                                             if (resConfigItem.currentMonitor) {
-                                                Monitors.monitorsModel.setProperty(Monitors.currentIndex(), "rate", currentText);
+                                                Monitors.monitorsModel.setProperty(Monitors.currentIndex(), "rate", resConfigItem.availableRates[index]);
                                                 Monitors.changeTrigger++;
                                                 Monitors.delayedLayoutUpdate.restart();
                                             }
