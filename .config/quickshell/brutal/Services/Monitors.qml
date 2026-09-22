@@ -234,7 +234,7 @@ end
                 fullCmd += " ; xrandr --output " + primaryMonitorName + " --primary";
             }
             
-            fullCmd += " ; $(command -v awww || echo swww) kill ; sleep 0.2 ; $(command -v awww-daemon || echo swww-daemon)";
+            fullCmd += " ; if pgrep -x awww-daemon >/dev/null; then awww kill; sleep 0.2; awww-daemon & elif pgrep -x swww-daemon >/dev/null; then swww kill; sleep 0.2; swww-daemon & fi";
             
             console.log("EXEC:", fullCmd);
             
