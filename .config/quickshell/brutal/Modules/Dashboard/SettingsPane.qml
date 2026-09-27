@@ -310,6 +310,78 @@ ColumnLayout {
                     }
                 }
 
+                // ── System Tray ────────────────────────────────────────────
+                BrutalCard {
+                    Layout.fillWidth: true
+                    title: "System Tray"
+                    icon: Icons.tray
+                    padding: Theme.space.xl
+
+                    SettingRow {
+                        Layout.fillWidth: true
+                        label: "Hide passive items"
+                        description: "Follows the spec to hide uninteresting icons, though many apps mislabel useful ones"
+                        type: "bool"
+                        tint: Theme.color.peach
+                        checked: Settings.data.bar.trayHidePassive
+                        onToggled: on => Settings.data.bar.trayHidePassive = on
+                    }
+
+                    BrutalDivider { Layout.fillWidth: true }
+
+                    ColumnLayout {
+                        Layout.fillWidth: true
+                        spacing: Theme.space.md
+
+                        BrutalText {
+                            text: "Visible applications"
+                            font.pixelSize: Theme.font.size.lg
+                            font.weight: Theme.font.weight.bold
+                        }
+
+                        BrutalText {
+                            text: "Uncheck an app to hide it from the bar. Only shows active apps and ones you've already hidden."
+                            dim: true
+                            font.pixelSize: Theme.font.size.sm
+                            wrapMode: Text.WordWrap
+                            Layout.fillWidth: true
+                        }
+
+                        Repeater {
+                            // Combine currently active tray items and already ignored IDs
+                            model: {
+                                let set = new Set();
+                                (Settings.data.bar.trayIgnored ?? []).forEach(id => set.add(id));
+                                Tray.all.forEach(item => set.add(item.id));
+                                return Array.from(set).sort();
+                            }
+
+                            delegate: SettingRow {
+                                id: trayRow
+                                required property string modelData
+                                Layout.fillWidth: true
+                                label: trayRow.modelData
+                                type: "bool"
+                                tint: Theme.color.blue
+                                checked: (Settings.data.bar.trayIgnored ?? []).indexOf(trayRow.modelData) === -1
+                                onToggled: on => {
+                                    let current = Array.from(Settings.data.bar.trayIgnored ?? []);
+                                    if (on) {
+                                        // Remove from ignored
+                                        current = current.filter(id => id !== trayRow.modelData);
+                                    } else {
+                                        // Add to ignored
+                                        if (current.indexOf(trayRow.modelData) === -1) {
+                                            current.push(trayRow.modelData);
+                                        }
+                                    }
+                                    Settings.data.bar.trayIgnored = current;
+                                }
+                            }
+                        }
+                    }
+                }
+
                 // ── Lock ───────────────────────────────────────────────────
                 BrutalCard {
                     Layout.fillWidth: true
