@@ -14,7 +14,7 @@
 - [ ] [FEATURE] Advanced audio GUI
 - [ ] [FEATURE] Advanced bluetooth GUI
 - [ ] [FEATURE] Screen recorder preferences
-- [ ] [FEATURE] Show/hide system tray icons
+- [x] [FEATURE] Show/hide system tray icons
 - [ ] [FEATURE] Nightlight adjustment and scheduler
 - [ ] [FEATURE] Allow selecting default apps during installation
 - [ ] [FEATURE] Driver config
