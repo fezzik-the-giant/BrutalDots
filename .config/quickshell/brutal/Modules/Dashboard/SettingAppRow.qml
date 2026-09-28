@@ -11,6 +11,7 @@ RowLayout {
     property string description: ""
     property string category: ""
     property string fallbackCategory: ""
+    property var extraMatch: null
     property string value: ""
     
     signal changed(string exec)
@@ -43,6 +44,7 @@ RowLayout {
         
         model: {
             let candidates = Apps.all.filter(e => {
+                if (root.extraMatch && root.extraMatch(e.name.toLowerCase())) return true;
                 if (!e.categories) return false;
                 let cats = e.categories.join(";");
                 return cats.includes(root.category) || (root.fallbackCategory && cats.includes(root.fallbackCategory));
