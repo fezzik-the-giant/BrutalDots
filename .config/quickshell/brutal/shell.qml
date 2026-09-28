@@ -258,4 +258,26 @@ ShellRoot {
         description: "Pick a colour into the clipboard"
         onPressed: Capture.pickColour()
     }
+
+    // ── Default Applications ───────────────────────────────────────────────
+    GlobalShortcut {
+        appid: "brutaldots"
+        name: "launchTerminal"
+        description: "Launch default terminal"
+        onPressed: Apps.run(Settings.data.apps.terminal)
+    }
+
+    GlobalShortcut {
+        appid: "brutaldots"
+        name: "launchBrowser"
+        description: "Launch default browser"
+        onPressed: Apps.run(Settings.data.apps.browser)
+    }
+
+    GlobalShortcut {
+        appid: "brutaldots"
+        name: "launchFiles"
+        description: "Launch default file manager"
+        onPressed: Apps.run(Settings.data.apps.files)
+    }
 }

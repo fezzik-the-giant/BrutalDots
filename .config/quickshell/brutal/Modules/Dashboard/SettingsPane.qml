@@ -536,6 +536,63 @@ ColumnLayout {
                     }
                 }
 
+                // ── Default Applications ───────────────────────────────────
+                BrutalCard {
+                    Layout.fillWidth: true
+                    title: "Default Apps"
+                    icon: Icons.appGrid
+                    padding: Theme.space.xl
+
+                    SettingAppRow {
+                        Layout.fillWidth: true
+                        label: "Terminal"
+                        category: "TerminalEmulator"
+                        value: Settings.data.apps.terminal
+                        onChanged: exec => Settings.data.apps.terminal = exec
+                    }
+
+                    BrutalDivider { Layout.fillWidth: true }
+
+                    SettingAppRow {
+                        Layout.fillWidth: true
+                        label: "Browser"
+                        category: "WebBrowser"
+                        value: Settings.data.apps.browser
+                        onChanged: exec => Settings.data.apps.browser = exec
+                    }
+
+                    BrutalDivider { Layout.fillWidth: true }
+
+                    SettingAppRow {
+                        Layout.fillWidth: true
+                        label: "File Manager"
+                        category: "FileManager"
+                        value: Settings.data.apps.files
+                        onChanged: exec => Settings.data.apps.files = exec
+                    }
+
+                    BrutalDivider { Layout.fillWidth: true }
+                    
+                    SettingAppRow {
+                        Layout.fillWidth: true
+                        label: "Music Player"
+                        category: "Audio"
+                        fallbackCategory: "AudioVideo"
+                        value: Settings.data.apps.music
+                        onChanged: exec => Settings.data.apps.music = exec
+                    }
+
+                    BrutalDivider { Layout.fillWidth: true }
+                    
+                    SettingAppRow {
+                        Layout.fillWidth: true
+                        label: "Text Editor"
+                        category: "TextEditor"
+                        value: Settings.data.apps.editor
+                        onChanged: exec => Settings.data.apps.editor = exec
+                    }
+                }
+
                 // ── Lock ───────────────────────────────────────────────────
                 BrutalCard {
                     Layout.fillWidth: true
