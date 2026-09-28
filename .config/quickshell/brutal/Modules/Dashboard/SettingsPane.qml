@@ -362,8 +362,20 @@ ColumnLayout {
                         Layout.fillWidth: true
                         label: "Text Editor"
                         category: "TextEditor"
+                        fallbackCategory: "Development"
                         value: Settings.data.apps.editor
                         onChanged: exec => Settings.data.apps.editor = exec
+                    }
+
+                    BrutalDivider { Layout.fillWidth: true }
+                    
+                    SettingAppRow {
+                        Layout.fillWidth: true
+                        label: "Chat / Messaging"
+                        category: "InstantMessaging"
+                        fallbackCategory: "Chat"
+                        value: Settings.data.apps.chat
+                        onChanged: exec => Settings.data.apps.chat = exec
                     }
                 }
 
