@@ -391,6 +391,41 @@ ColumnLayout {
                         Layout.fillWidth: true
                         spacing: Theme.space.md
 
+                        // Header Row
+                        RowLayout {
+                            Layout.fillWidth: true
+                            spacing: Theme.space.sm
+
+                            BrutalText {
+                                Layout.preferredWidth: 100
+                                text: "Name"
+                                dim: true
+                                font.pixelSize: Theme.font.size.sm
+                                font.weight: Theme.font.weight.bold
+                            }
+
+                            BrutalText {
+                                Layout.fillWidth: true
+                                text: "URL"
+                                dim: true
+                                font.pixelSize: Theme.font.size.sm
+                                font.weight: Theme.font.weight.bold
+                            }
+
+                            BrutalText {
+                                Layout.preferredWidth: 80
+                                text: "Icon"
+                                dim: true
+                                font.pixelSize: Theme.font.size.sm
+                                font.weight: Theme.font.weight.bold
+                            }
+
+                            Item {
+                                // Spacer for the delete button column
+                                Layout.preferredWidth: 38
+                            }
+                        }
+
                         Repeater {
                             model: Settings.data.quickLinks
                             delegate: RowLayout {
