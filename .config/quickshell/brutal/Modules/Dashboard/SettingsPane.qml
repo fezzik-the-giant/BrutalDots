@@ -606,6 +606,96 @@ ColumnLayout {
                     }
                 }
 
+                // ── Quick Links ────────────────────────────────────────────
+                BrutalCard {
+                    Layout.fillWidth: true
+                    title: "Quick Links"
+                    icon: Icons.browser
+                    padding: Theme.space.xl
+                    
+                    ColumnLayout {
+                        Layout.fillWidth: true
+                        spacing: Theme.space.md
+
+                        Repeater {
+                            model: Settings.data.quickLinks
+                            delegate: RowLayout {
+                                id: linkRow
+                                required property var modelData
+                                required property int index
+                                
+                                Layout.fillWidth: true
+                                spacing: Theme.space.sm
+
+                                BrutalTextField {
+                                    Layout.preferredWidth: 100
+                                    text: linkRow.modelData.name
+                                    placeholder: "Name"
+                                    onAccepted: val => {
+                                        let arr = Array.from(Settings.data.quickLinks);
+                                        arr[linkRow.index].name = val;
+                                        Settings.data.quickLinks = arr;
+                                    }
+                                }
+
+                                BrutalTextField {
+                                    Layout.fillWidth: true
+                                    text: linkRow.modelData.url
+                                    placeholder: "https://"
+                                    onAccepted: val => {
+                                        let arr = Array.from(Settings.data.quickLinks);
+                                        arr[linkRow.index].url = val;
+                                        Settings.data.quickLinks = arr;
+                                    }
+                                }
+
+                                BrutalTextField {
+                                    Layout.preferredWidth: 80
+                                    text: linkRow.modelData.icon
+                                    placeholder: "Icon"
+                                    onAccepted: val => {
+                                        let arr = Array.from(Settings.data.quickLinks);
+                                        arr[linkRow.index].icon = val;
+                                        Settings.data.quickLinks = arr;
+                                    }
+                                }
+
+                                BrutalIconButton {
+                                    icon: Icons.close
+                                    size: 38
+                                    onClicked: {
+                                        let arr = Array.from(Settings.data.quickLinks);
+                                        arr.splice(linkRow.index, 1);
+                                        Settings.data.quickLinks = arr;
+                                    }
+                                }
+                            }
+                        }
+
+                        BrutalButton {
+                            Layout.alignment: Qt.AlignHCenter
+                            Layout.topMargin: Theme.space.sm
+                            implicitWidth: 120
+                            implicitHeight: 34
+                            radius: Theme.radius.sm
+                            baseColor: Theme.color.mint
+                            
+                            RowLayout {
+                                anchors.centerIn: parent
+                                spacing: Theme.space.sm
+                                BrutalIcon { text: Icons.plus; color: Theme.color.ink }
+                                BrutalText { text: "Add Link"; color: Theme.color.ink; font.weight: Theme.font.weight.bold }
+                            }
+                            
+                            onClicked: {
+                                let arr = Array.from(Settings.data.quickLinks ?? []);
+                                arr.push({ name: "New Link", url: "https://", icon: "browser", color: "blue" });
+                                Settings.data.quickLinks = arr;
+                            }
+                        }
+                    }
+                }
+
                 // ── Lock ───────────────────────────────────────────────────
                 BrutalCard {
                     Layout.fillWidth: true
