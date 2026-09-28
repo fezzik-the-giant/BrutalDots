@@ -600,6 +600,7 @@ ColumnLayout {
                         label: "Chat / Messaging"
                         category: "InstantMessaging"
                         fallbackCategory: "Chat"
+                        extraMatch: name => name.includes("vesktop") || name.includes("discord") || name.includes("teams") || name.includes("slack")
                         value: Settings.data.apps.chat
                         onChanged: exec => Settings.data.apps.chat = exec
                     }
