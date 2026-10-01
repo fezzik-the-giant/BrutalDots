@@ -99,12 +99,12 @@ ColumnLayout {
 
                     BrutalDivider {
                         Layout.fillWidth: true
-                        visible: NightLight.enabled || Settings.data.nightLight.scheduleSunset || Settings.data.nightLight.scheduleCustom
+                        visible: NightLight.inUse
                     }
 
                     SettingRow {
                         Layout.fillWidth: true
-                        visible: NightLight.enabled || Settings.data.nightLight.scheduleSunset || Settings.data.nightLight.scheduleCustom
+                        visible: NightLight.inUse
                         enabled: NightLight.available
                         opacity: NightLight.available ? 1 : 0.5
                         label: "Temperature"
@@ -118,10 +118,14 @@ ColumnLayout {
                         onMoved: v => Settings.data.nightLight.temperature = v
                     }
 
-                    BrutalDivider { Layout.fillWidth: true }
+                    BrutalDivider {
+                        Layout.fillWidth: true
+                        visible: NightLight.inUse
+                    }
 
                     SettingRow {
                         Layout.fillWidth: true
+                        visible: NightLight.inUse
                         enabled: NightLight.available
                         opacity: NightLight.available ? 1 : 0.5
                         label: "Sunset to sunrise"
@@ -140,6 +144,7 @@ ColumnLayout {
 
                     SettingRow {
                         Layout.fillWidth: true
+                        visible: NightLight.inUse
                         enabled: NightLight.available
                         opacity: NightLight.available ? 1 : 0.5
                         label: "Custom schedule"

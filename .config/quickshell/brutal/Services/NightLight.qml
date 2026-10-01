@@ -89,6 +89,13 @@ Singleton {
     readonly property int customOn: Settings.data.nightLight.customOn
     readonly property int customOff: Settings.data.nightLight.customOff
 
+    /// Whether the night light section applies at all: on now, or a schedule
+    /// that will turn it on. The rows that configure it hang off this rather
+    /// than off `enabled`, which is the momentary state the schedule itself
+    /// drives — gating them on that would make a schedule set during the day
+    /// hide the very row that controls it.
+    readonly property bool inUse: root.enabled || root.scheduleSunset || root.scheduleCustom
+
     /// Sun times, not Weather.isDay. `isDay` defaults to true and is only
     /// written on a successful forecast parse, so an offline or rate-limited
     /// shell reads as permanent daylight and the schedule silently never
