@@ -75,6 +75,7 @@ Singleton {
     // Widgets
     readonly property string tasks: "󰄲"
     readonly property string check: "󰄬"
+    readonly property string star: "󰓎"
     readonly property string plus: "󰐕"
     readonly property string minus: "󰍴"
     readonly property string close: "󰅖"
