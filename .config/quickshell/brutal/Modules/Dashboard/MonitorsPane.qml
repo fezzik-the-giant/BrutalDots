@@ -178,9 +178,16 @@ ColumnLayout {
                                             rotation: model.transform * 90
                                             Behavior on rotation { NumberAnimation { duration: 400; easing.type: Easing.OutQuint } }
                                             
+                                            // These are drawn through the canvas
+                                            // zoom and its compensating scale, so
+                                            // every glyph goes through a fractional
+                                            // transform. NativeRendering, which
+                                            // BrutalText defaults to, is sharp only
+                                            // unscaled at integer positions.
                                             BrutalIcon {
                                                 Layout.alignment: Qt.AlignHCenter
                                                 font.pixelSize: 26
+                                                renderType: Text.QtRendering
                                                 color: isActive ? Monitors.selectedResAccent : Theme.color.ink
                                                 text: Icons.monitor
                                                 Behavior on color { ColorAnimation { duration: 300 } }
@@ -189,12 +196,14 @@ ColumnLayout {
                                                 Layout.alignment: Qt.AlignHCenter
                                                 font.weight: Theme.font.weight.black
                                                 font.pixelSize: 10
+                                                renderType: Text.QtRendering
                                                 color: Theme.color.ink
                                                 text: model.name
                                             }
                                             BrutalText {
                                                 Layout.alignment: Qt.AlignHCenter
                                                 font.pixelSize: 9
+                                                renderType: Text.QtRendering
                                                 color: Theme.color.subtext
                                                 text: model.resW + "×" + model.resH + "@" + model.rate
                                             }
