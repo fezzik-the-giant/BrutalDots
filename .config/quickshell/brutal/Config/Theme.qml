@@ -38,7 +38,9 @@ Singleton {
         readonly property color mantle: "#EFE0D6"    // recessed / page background
         readonly property color crust: "#E8E0D0"     // bar islands
         readonly property color ink: "#161110"       // borders and text
-        readonly property color subtext: "#857E7B"   // secondary text
+        /// Darkened to clear AA on the darkest light neutral. #857E7B
+        /// measured 3.04:1 on crust and had never been checked.
+        readonly property color subtext: "#686361"   // secondary text
         readonly property color overlay: "#99000000" // scrim behind dashboards (#AARRGGBB)
         /// Cast shadows. Light mode can use the ink itself; dark mode cannot.
         readonly property color shadow: "#161110"
