@@ -128,6 +128,7 @@ Variants {
                                 switch (ShellState.dashboardTab) {
                                 case "settings": return 1;
                                 case "keybinds": return 2;
+                                case "monitors": return 3;
                                 default: return 0;
                                 }
                             }
@@ -192,6 +193,9 @@ Variants {
 
                             // ── Keybinds ───────────────────────────────────
                             KeybindsPane {}
+
+                            // ── Monitors ───────────────────────────────────
+                            MonitorsPane {}
                         }
                     }
                 }

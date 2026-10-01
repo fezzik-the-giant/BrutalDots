@@ -154,7 +154,14 @@ power glyph sat 1px right of its button's centre and now sits on it.
 ### Contrast floors
 
 - Ink on any accent: **≥4.5:1** (currently 7.84–14.18).
-- `subtext` on any surface: **≥4.5:1**.
+- `subtext` on any surface: **≥4.5:1**. `crust` binds this, not `base`: for
+  dark ink the *darkest* neutral is the hardest background. The light value
+  was corrected from `#857E7B`, which measured 3.04-3.54:1 — the dark value
+  was retuned when the dark ramp was lifted and the light one was never
+  revisited, so the floor was asserted here from a dark-mode exercise alone.
+  `#686361` clears 4.51:1 on `crust` and 5.27:1 on `base`. It sits closer to
+  the ink than the old value did, and that is the cost: lightening it back
+  for hierarchy puts 9px text under AA again.
 - An accent block against the surface behind it: below ~1.35 it stops reading
   as a block.
 

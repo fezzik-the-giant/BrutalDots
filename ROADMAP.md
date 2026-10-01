@@ -4,8 +4,6 @@
 
 ## Backlog
 
-- [ ] [FEATURE] Power profiles
-- [ ] [FEATURE] Edit dashboard apps and links
 - [ ] [FEATURE] Matugen palettes
 - [ ] [FEATURE] Global UI Scaling
 - [ ] [FEATURE] Keyboard layout management
@@ -23,6 +21,8 @@
 
 ## Done
 
+- [x] [FEATURE] Monitor/workspace configuration
+- [x] [FEATURE] Nightlight adjustment and scheduler
 - [x] [FEATURE]Roadmap.md Sync
 - [x] [BUG] Tasks widget won't close with click
 - [x] Feature Request Roadmap
@@ -30,5 +30,11 @@
 
 ## In progress
 
-- [-] **[IN PROGRESS]** [FEATURE] Monitor/workspace configuration
+- [-] **[IN PROGRESS]** [FEATURE] Power profiles
+
+## In review
+
+- [?] **[IN REVIEW]** [FEATURE] Show/hide system tray icons
+- [?] **[IN REVIEW]** [FEATURE] Allow selecting default apps during installation
+- [?] **[IN REVIEW]** [FEATURE] Edit dashboard apps and links
 
