@@ -298,8 +298,10 @@ end
                 fullCmd += " ; xrandr --output " + primaryMonitorName + " --primary";
             }
             
-            fullCmd += " ; if pgrep -x awww-daemon >/dev/null; then awww kill; sleep 0.2; awww-daemon & elif pgrep -x swww-daemon >/dev/null; then swww kill; sleep 0.2; swww-daemon & fi";
-            
+            // Deliberately does not touch swww/awww: the shell draws the
+            // wallpaper itself (Config/Settings.qml, wallpaper.enabled), and a
+            // second surface on the background layer covers it, which makes the
+            // wallpaper picker look like it has stopped working.
             Quickshell.execDetached(["sh", "-c", fullCmd]);
             Quickshell.execDetached(["notify-send", "Display Update", "Applied layout for: " + summaryString.trim()]);
         } catch(e) {
