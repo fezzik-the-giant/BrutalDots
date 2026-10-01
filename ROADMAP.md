@@ -4,7 +4,6 @@
 
 ## Backlog
 
-- [ ] [FEATURE] Edit dashboard apps and links
 - [ ] [FEATURE] Matugen palettes
 - [ ] [FEATURE] Global UI Scaling
 - [ ] [FEATURE] Keyboard layout management
@@ -34,4 +33,5 @@
 
 - [?] **[IN REVIEW]** [FEATURE] Show/hide system tray icons
 - [?] **[IN REVIEW]** [FEATURE] Allow selecting default apps during installation
+- [?] **[IN REVIEW]** [FEATURE] Edit dashboard apps and links
 
