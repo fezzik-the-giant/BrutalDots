@@ -11,10 +11,6 @@
 -- default changed here cannot drift apart. Editing this file by hand still
 -- works exactly as before — change a `key`, not an `hl.bind` call.
 
-local terminal = os.getenv("TERMINAL") or "kitty"
-local browser  = os.getenv("BROWSER") or "firefox"
-local files    = "nautilus"
-
 local state_dir = (os.getenv("XDG_STATE_HOME") or (HOME .. "/.local/state"))
     .. "/brutaldots"
 
@@ -96,11 +92,11 @@ add({ id = "shell.restart",    group = "Shell", key = "CTRL + SUPER + R",
 
 -- ── Applications ────────────────────────────────────────────────────────────
 add({ id = "launch.terminal", group = "Launch", key = "SUPER + Return",
-      description = "Terminal", action = hl.dsp.exec_cmd(terminal) })
+      description = "Terminal", action = hl.dsp.global("brutaldots:launchTerminal") })
 add({ id = "launch.browser",  group = "Launch", key = "SUPER + B",
-      description = "Browser",  action = hl.dsp.exec_cmd(browser) })
+      description = "Browser",  action = hl.dsp.global("brutaldots:launchBrowser") })
 add({ id = "launch.files",    group = "Launch", key = "SUPER + E",
-      description = "Files",    action = hl.dsp.exec_cmd(files) })
+      description = "Files",    action = hl.dsp.global("brutaldots:launchFiles") })
 
 -- ── Windows ─────────────────────────────────────────────────────────────────
 add({ id = "window.close",      group = "Window", key = "SUPER + Q",

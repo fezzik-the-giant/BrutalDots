@@ -5,7 +5,7 @@
 ## Backlog
 
 - [ ] [FEATURE] Power profiles
-- [ ] [FEATURE] Edit dashboard apps and links
+- [x] [FEATURE] Edit dashboard apps and links
 - [ ] [FEATURE] Matugen palettes
 - [ ] [FEATURE] Global UI Scaling
 - [ ] [FEATURE] Keyboard layout management
