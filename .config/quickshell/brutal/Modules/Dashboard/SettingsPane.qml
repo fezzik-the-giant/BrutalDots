@@ -80,6 +80,93 @@ ColumnLayout {
                         checked: Theme.dark
                         onToggled: on => Theme.setDark(on)
                     }
+
+                    BrutalDivider { Layout.fillWidth: true }
+
+                    SettingRow {
+                        Layout.fillWidth: true
+                        label: "Night light"
+                        description: "Warms the screen colours to reduce eye strain"
+                        type: "bool"
+                        tint: Theme.color.peach
+                        checked: NightLight.enabled
+                        onToggled: on => on ? NightLight.enable() : NightLight.disable()
+                    }
+
+                    BrutalDivider {
+                        Layout.fillWidth: true
+                        visible: NightLight.enabled || Settings.data.nightLight.scheduleSunset || Settings.data.nightLight.scheduleCustom
+                    }
+
+                    SettingRow {
+                        Layout.fillWidth: true
+                        visible: NightLight.enabled || Settings.data.nightLight.scheduleSunset || Settings.data.nightLight.scheduleCustom
+                        label: "Temperature"
+                        description: "How warm the display gets (lower is warmer)"
+                        type: "int"
+                        tint: Theme.color.peach
+                        minimum: 1000
+                        maximum: 10000
+                        value: Settings.data.nightLight.temperature
+                        format: v => v + "K"
+                        onMoved: v => Settings.data.nightLight.temperature = v
+                    }
+
+                    BrutalDivider { Layout.fillWidth: true }
+
+                    SettingRow {
+                        Layout.fillWidth: true
+                        label: "Sunset to sunrise"
+                        description: "Automatically turn on when the sun goes down"
+                        type: "bool"
+                        tint: Theme.color.blue
+                        checked: Settings.data.nightLight.scheduleSunset
+                        onToggled: on => {
+                            Settings.data.nightLight.scheduleSunset = on;
+                            if (on) Settings.data.nightLight.scheduleCustom = false;
+                        }
+                    }
+
+                    SettingRow {
+                        Layout.fillWidth: true
+                        label: "Custom schedule"
+                        description: "Automatically turn on between specific hours"
+                        type: "bool"
+                        tint: Theme.color.blue
+                        checked: Settings.data.nightLight.scheduleCustom
+                        onToggled: on => {
+                            Settings.data.nightLight.scheduleCustom = on;
+                            if (on) Settings.data.nightLight.scheduleSunset = false;
+                        }
+                    }
+
+                    SettingRow {
+                        Layout.fillWidth: true
+                        visible: Settings.data.nightLight.scheduleCustom
+                        label: "Turn on at"
+                        description: "Hour of the day"
+                        type: "int"
+                        tint: Theme.color.lavender
+                        minimum: 0
+                        maximum: 23
+                        value: Settings.data.nightLight.customOn
+                        format: v => v + ":00"
+                        onMoved: v => Settings.data.nightLight.customOn = v
+                    }
+
+                    SettingRow {
+                        Layout.fillWidth: true
+                        visible: Settings.data.nightLight.scheduleCustom
+                        label: "Turn off at"
+                        description: "Hour of the day"
+                        type: "int"
+                        tint: Theme.color.lavender
+                        minimum: 0
+                        maximum: 23
+                        value: Settings.data.nightLight.customOff
+                        format: v => v + ":00"
+                        onMoved: v => Settings.data.nightLight.customOff = v
+                    }
                 }
 
                 // ── Idle ladder ────────────────────────────────────────────
