@@ -13,7 +13,8 @@ RowLayout {
     readonly property var tabs: [
         { key: "overview", label: "Overview", icon: Icons.dashboard, tint: Theme.color.peach },
         { key: "settings", label: "Settings", icon: Icons.settings,  tint: Theme.color.blue },
-        { key: "keybinds", label: "Keybinds", icon: Icons.keyboard,  tint: Theme.color.mint }
+        { key: "keybinds", label: "Keybinds", icon: Icons.keyboard,  tint: Theme.color.mint },
+        { key: "monitors", label: "Monitors", icon: Icons.monitor,   tint: Theme.color.lavender }
     ]
 
     Repeater {
