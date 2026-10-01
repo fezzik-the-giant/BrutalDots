@@ -58,8 +58,8 @@ ColumnLayout {
                         RowLayout {
                             anchors.centerIn: parent
                             spacing: Theme.space.sm
-                            BrutalIcon { text: Icons.check; color: Theme.color.crust }
-                            BrutalText { text: "Apply Layout"; font.weight: Theme.font.weight.bold; color: Theme.color.crust }
+                            BrutalIcon { text: Icons.check }
+                            BrutalText { text: "Apply Layout"; font.weight: Theme.font.weight.bold }
                         }
 
                         onClicked: Monitors.applyMonitors()
