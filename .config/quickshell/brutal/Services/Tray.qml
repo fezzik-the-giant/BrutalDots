@@ -26,4 +26,12 @@ Singleton {
     })
 
     readonly property int count: root.items.length
+
+    /// Ids the passive filter is currently dropping. The settings list keeps a
+    /// row for every item, so it has to be able to say which of them the bar
+    /// is already hiding — otherwise "Visible applications" contradicts the
+    /// passive toggle sitting directly above it.
+    readonly property var passiveHidden: Settings.data.bar.trayHidePassive
+        ? root.all.filter(item => item.status === Status.Passive).map(item => item.id)
+        : []
 }
