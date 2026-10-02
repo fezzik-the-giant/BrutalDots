@@ -210,6 +210,25 @@ Quickshell implements it as `dispatch("workspace <id>")`, which fails
 the plain form as a fallback for anyone running the shell against a `.conf`
 Hyprland.
 
+Three more, all of which cost round trips when probing a running compositor:
+
+- **`hyprctl eval` prints only `ok`.** Never the expression's value, and never
+  a Lua error — a syntax error and a successful call are indistinguishable from
+  the output, so a check that reads stdout proves nothing. A probe has to write
+  its own result out (`io.open(path, "w")`) and be read back from there. It
+  does accept statements as well as expressions: a bare
+  `package.loaded["x"] = nil` takes effect, verified by reading a sentinel back.
+- **There is no `hl.off`.** A subscription registered through `eval` lives
+  until the config is re-read, so clean up an ad-hoc `hl.on` with
+  `hyprctl reload`. That is safe for autostarts: a reload does **not** re-fire
+  `hyprland.start`, measured by counting the processes `custom/execs.lua`
+  launches before and after — identical.
+- **`win.monitor` is not where the window is.** A window the compositor did not
+  place reports the monitor that was *focused* when it opened, so use
+  `hl.get_monitor_at(win.at.x, win.at.y)`. Observed with an XWayland client
+  that positioned itself in absolute screen coordinates; recorded here rather
+  than re-measured, since nothing in the repo now does this.
+
 Replacing the Hyprland config is a **rename, not a delete-then-copy**.
 Hyprland watches `hyprland.lua` and reloads the instant it changes; remove it
 first and a running compositor reads the gap, puts "cannot open hyprland.lua"
