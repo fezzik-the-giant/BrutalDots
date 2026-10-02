@@ -20,6 +20,7 @@
 
 - [x] [FEATURE] Monitor/workspace configuration
 - [x] [FEATURE] Nightlight adjustment and scheduler
+- [x] [FEATURE] Show/hide system tray icons
 - [x] [FEATURE]Roadmap.md Sync
 - [x] [BUG] Tasks widget won't close with click
 - [x] Feature Request Roadmap
@@ -31,7 +32,6 @@
 
 ## In review
 
-- [?] **[IN REVIEW]** [FEATURE] Show/hide system tray icons
 - [?] **[IN REVIEW]** [FEATURE] Allow selecting default apps during installation
 - [?] **[IN REVIEW]** [FEATURE] Edit dashboard apps and links
 
