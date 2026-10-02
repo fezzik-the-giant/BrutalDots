@@ -7,13 +7,14 @@ import qs.Components
 import qs.Services
 
 /**
- * The dashboard's Settings tab: idle and lock behaviour, then Hyprland's window
- * appearance.
+ * The dashboard's Settings tab: idle behaviour, the night light, Hyprland's
+ * window appearance, the system tray and the lock screen.
  *
- * Idle and lock write to settings.json through its JsonAdapter. Appearance
- * writes into a block in custom/general.lua and applies live through
- * `hyprctl eval` — see Services/Appearance.qml for why those are not the same
- * mechanism. Either way there is no save button: everything applies at once.
+ * Most of it writes to settings.json through its JsonAdapter. Appearance is
+ * the exception: it writes into a block in custom/general.lua and applies live
+ * through `hyprctl eval` — see Services/Appearance.qml for why those are not
+ * the same mechanism. Either way there is no save button: everything applies
+ * at once.
  */
 ColumnLayout {
     id: root
@@ -413,6 +414,122 @@ ColumnLayout {
                                         ? `Reset ${root.appearanceCount}` : "No changes"
                                     font.pixelSize: Theme.font.size.md
                                     font.weight: Theme.font.weight.bold
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // ── System Tray ────────────────────────────────────────────
+                BrutalCard {
+                    Layout.fillWidth: true
+                    title: "System Tray"
+                    icon: Icons.tray
+                    padding: Theme.space.xl
+
+                    SettingRow {
+                        Layout.fillWidth: true
+                        label: "Hide passive items"
+                        description: "Follows the spec to hide uninteresting icons, though many apps mislabel useful ones"
+                        type: "bool"
+                        tint: Theme.color.peach
+                        checked: Settings.data.bar.trayHidePassive
+                        onToggled: on => Settings.data.bar.trayHidePassive = on
+                    }
+
+                    BrutalDivider { Layout.fillWidth: true }
+
+                    ColumnLayout {
+                        id: trayList
+
+                        Layout.fillWidth: true
+                        spacing: Theme.space.md
+
+                        /// A snapshot, deliberately not a binding over
+                        /// trayIgnored. The rows write that list, so a model
+                        /// derived from it is rebuilt from inside the handler
+                        /// of the row just clicked — and re-ticking an app
+                        /// that has since quit would delete its own row
+                        /// mid-click, because the id leaves trayIgnored
+                        /// without being in Tray.all. Refreshed when the tray
+                        /// changes or the pane is opened, never while a row
+                        /// is being toggled.
+                        property var rows: []
+
+                        function refreshRows(): void {
+                            const byId = ({});
+                            // Hidden apps that are not running have no item to
+                            // read a title from; the id is all we have.
+                            (Settings.data.bar.trayIgnored ?? []).forEach(id => {
+                                byId[id] = ({ id: id, title: "" });
+                            });
+                            Tray.all.forEach(item => {
+                                byId[item.id] = ({ id: item.id, title: item.title ?? "" });
+                            });
+                            // Sorted by what the row actually shows, not by
+                            // the id, or a list labelled with titles comes out
+                            // in an order with no visible logic.
+                            trayList.rows = Object.keys(byId).map(k => byId[k]).sort((a, b) =>
+                                (a.title || a.id).toLowerCase().localeCompare((b.title || b.id).toLowerCase()));
+                        }
+
+                        Component.onCompleted: trayList.refreshRows()
+                        onVisibleChanged: if (trayList.visible) trayList.refreshRows()
+
+                        Connections {
+                            target: Tray
+                            function onAllChanged(): void { trayList.refreshRows(); }
+                        }
+
+                        BrutalText {
+                            text: "Visible applications"
+                            font.pixelSize: Theme.font.size.lg
+                            font.weight: Theme.font.weight.bold
+                        }
+
+                        BrutalText {
+                            text: trayList.rows.length > 0
+                                ? "Uncheck an app to hide it from the bar. Only shows active apps and ones you've already hidden."
+                                : "No applications are using the system tray."
+                            dim: true
+                            font.pixelSize: Theme.font.size.sm
+                            wrapMode: Text.WordWrap
+                            Layout.fillWidth: true
+                        }
+
+                        Repeater {
+                            model: trayList.rows
+
+                            delegate: SettingRow {
+                                id: trayRow
+
+                                required property var modelData
+                                readonly property string trayId: trayRow.modelData.id
+                                readonly property bool passiveHidden:
+                                    Tray.passiveHidden.indexOf(trayRow.trayId) !== -1
+
+                                Layout.fillWidth: true
+                                // The id stays the stored key, because that is
+                                // what Tray.qml filters on, but the spec only
+                                // promises it is unique — title is the field
+                                // defined as human-readable. Same fallback
+                                // order as TrayMenu.
+                                label: trayRow.modelData.title || trayRow.trayId
+                                description: trayRow.passiveHidden
+                                    ? "Hidden by \"Hide passive items\""
+                                    : (trayRow.modelData.title && trayRow.modelData.title !== trayRow.trayId
+                                        ? trayRow.trayId
+                                        : "")
+                                type: "bool"
+                                tint: Theme.color.blue
+                                checked: (Settings.data.bar.trayIgnored ?? []).indexOf(trayRow.trayId) === -1
+                                onToggled: on => {
+                                    let current = Array.from(Settings.data.bar.trayIgnored ?? []);
+                                    if (on)
+                                        current = current.filter(id => id !== trayRow.trayId);
+                                    else if (current.indexOf(trayRow.trayId) === -1)
+                                        current.push(trayRow.trayId);
+                                    Settings.data.bar.trayIgnored = current;
                                 }
                             }
                         }
