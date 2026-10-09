@@ -168,7 +168,39 @@ Singleton {
         root.launchCounts = counts;
         usage.setText(JSON.stringify(counts));
 
-        entry.execute();
+        // execute() does not honour Terminal=true, so a TUI would start with
+        // no window to draw in.
+        if (entry.runInTerminal) root.run(root.inTerminal(root.commandFor(entry), entry.workingDirectory));
+        else entry.execute();
+    }
+
+    /// How each terminal takes a command to run. Most take `-e` and the rest
+    /// of the line as argv; these are the ones that do not.
+    readonly property var execFlags: ({
+        "foot": "",
+        "footclient": "",
+        "wezterm": "start --",
+        "gnome-terminal": "--",
+        "kgx": "--",
+        "ptyxis": "--"
+    })
+
+    /// A command line wrapped to open in the terminal chosen in Settings, so
+    /// terminal apps follow that choice rather than one fixed here.
+    function inTerminal(command: string, dir: string): string {
+        const terminal = (Settings.data.apps.terminal ?? "").trim() || "kitty";
+        const program = terminal.split(/\s+/)[0].split("/").pop();
+        const flag = root.execFlags[program] ?? "-e";
+        const line = [terminal, flag, command].filter(part => part !== "").join(" ");
+        // Path= in the entry; execute() would have honoured it.
+        return dir ? `cd ${JSON.stringify(dir)} && ${line}` : line;
+    }
+
+    /// Run a command picked from the desktop entries — the dashboard rail and
+    /// the launch binds. Inside a terminal when its entry asks for one.
+    function runApp(command: string): void {
+        const entry = root.entryForCommand(command);
+        root.run(entry?.runInTerminal ? root.inTerminal(command.trim(), entry.workingDirectory) : command);
     }
 
     /// An entry's Exec line as something `run()` can take: the whole line,

@@ -67,7 +67,7 @@ BrutalCard {
                 hoverColor: entry.modelData.tint
 
                 onClicked: {
-                    Quickshell.execDetached(["sh", "-c", entry.modelData.cmd]);
+                    Apps.runApp(entry.modelData.cmd);
                     ShellState.dashboardOpen = false;
                 }
 

@@ -104,7 +104,7 @@ ShellRoot {
         /// files, music, editor or chat.
         function launch(app: string): void {
             const command = Settings.data.apps[app];
-            if (typeof command === "string") Apps.run(command);
+            if (typeof command === "string") Apps.runApp(command);
         }
 
         /// Expand the now-playing capsule into the mini player.
