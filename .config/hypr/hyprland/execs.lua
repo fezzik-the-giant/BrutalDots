@@ -32,7 +32,10 @@ local function detect_shell_cmd()
 end
 
 local shell_cmd = detect_shell_cmd()
-local shell_ipc = shell_cmd .. " ipc call shell"
+-- Global so keybinds.lua, loaded after this, reaches the same shell — under
+-- test-nested.sh, `qs -c brutal` would be the live session's.
+SHELL_IPC = shell_cmd .. " ipc call shell"
+local shell_ipc = SHELL_IPC
 
 -- Cursor theme and size. Override in custom/env.lua.
 local cursor_theme = os.getenv("XCURSOR_THEME") or "Adwaita"

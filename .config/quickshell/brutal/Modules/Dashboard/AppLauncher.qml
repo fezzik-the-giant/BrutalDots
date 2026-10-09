@@ -18,6 +18,10 @@ BrutalCard {
      * empty or is a shell line too tangled to name (`sh -c '…'`).
      */
     function label(cmd: string, fallback: string): string {
+        // A command picked in Settings is a full Exec line — `flatpak run …`
+        // would otherwise be named "Flatpak".
+        const entry = Apps.entryForCommand(cmd);
+        if (entry) return entry.name;
         const word = (cmd ?? "").trim().split(/\s+/)[0] ?? "";
         const name = word.split("/").pop();
         if (name === "" || !/^[A-Za-z][A-Za-z0-9._-]*$/.test(name)) return fallback;

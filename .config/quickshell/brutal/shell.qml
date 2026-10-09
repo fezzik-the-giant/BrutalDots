@@ -100,6 +100,13 @@ ShellRoot {
         function clipboard(): void { ShellState.openLauncher("clipboard"); }
         function lock(): void { ShellState.locked = true; }
 
+        /// Run the app chosen in Settings for a role: terminal, browser,
+        /// files, music, editor or chat.
+        function launch(app: string): void {
+            const command = Settings.data.apps[app];
+            if (typeof command === "string") Apps.run(command);
+        }
+
         /// Expand the now-playing capsule into the mini player.
         function media(): void { ShellState.toggleMedia(); }
 

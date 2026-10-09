@@ -19,6 +19,10 @@ BrutalBox {
     property bool acceptEmpty: false
 
     signal accepted(string text)
+    /// Return *or* focus leaving the field, trimmed and empty included: for a
+    /// form that saves as you go, where Return-only loses whatever was typed
+    /// before clicking on into the next field.
+    signal edited(string text)
     /// Raised before the input handles a key, so a consumer (the launcher)
     /// can steal arrows and Escape without owning the field.
     signal keyPressed(var event)
@@ -47,6 +51,8 @@ BrutalBox {
         clip: true
 
         Keys.onPressed: event => root.keyPressed(event)
+
+        onEditingFinished: root.edited(text.trim())
 
         onAccepted: {
             const value = text.trim();

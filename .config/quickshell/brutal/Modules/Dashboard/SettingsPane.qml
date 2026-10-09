@@ -536,6 +536,228 @@ ColumnLayout {
                     }
                 }
 
+                // ── Default Applications ───────────────────────────────────
+                BrutalCard {
+                    Layout.fillWidth: true
+                    title: "Default Apps"
+                    icon: Icons.appGrid
+                    padding: Theme.space.xl
+
+                    SettingAppRow {
+                        Layout.fillWidth: true
+                        label: "Terminal"
+                        category: "TerminalEmulator"
+                        value: Settings.data.apps.terminal
+                        onChanged: exec => Settings.data.apps.terminal = exec
+                    }
+
+                    BrutalDivider { Layout.fillWidth: true }
+
+                    SettingAppRow {
+                        Layout.fillWidth: true
+                        label: "Browser"
+                        category: "WebBrowser"
+                        value: Settings.data.apps.browser
+                        onChanged: exec => Settings.data.apps.browser = exec
+                    }
+
+                    BrutalDivider { Layout.fillWidth: true }
+
+                    SettingAppRow {
+                        Layout.fillWidth: true
+                        label: "File Manager"
+                        category: "FileManager"
+                        value: Settings.data.apps.files
+                        onChanged: exec => Settings.data.apps.files = exec
+                    }
+
+                    BrutalDivider { Layout.fillWidth: true }
+                    
+                    SettingAppRow {
+                        Layout.fillWidth: true
+                        label: "Music Player"
+                        category: "Audio"
+                        value: Settings.data.apps.music
+                        onChanged: exec => Settings.data.apps.music = exec
+                    }
+
+                    BrutalDivider { Layout.fillWidth: true }
+                    
+                    SettingAppRow {
+                        Layout.fillWidth: true
+                        label: "Text Editor"
+                        category: "TextEditor"
+                        extraCategory: "Development"
+                        value: Settings.data.apps.editor
+                        onChanged: exec => Settings.data.apps.editor = exec
+                    }
+
+                    BrutalDivider { Layout.fillWidth: true }
+                    
+                    SettingAppRow {
+                        Layout.fillWidth: true
+                        label: "Chat / Messaging"
+                        category: "InstantMessaging"
+                        extraCategory: "Chat"
+                        extraMatch: name => name.includes("vesktop") || name.includes("discord") || name.includes("teams") || name.includes("slack")
+                        value: Settings.data.apps.chat
+                        onChanged: exec => Settings.data.apps.chat = exec
+                    }
+                }
+
+                // ── Quick Links ────────────────────────────────────────────
+                BrutalCard {
+                    Layout.fillWidth: true
+                    title: "Quick Links"
+                    icon: Icons.browser
+                    padding: Theme.space.xl
+                    
+                    ColumnLayout {
+                        Layout.fillWidth: true
+                        spacing: Theme.space.md
+
+                        // Header Row
+                        RowLayout {
+                            Layout.fillWidth: true
+                            spacing: Theme.space.sm
+
+                            BrutalText {
+                                Layout.preferredWidth: 100
+                                text: "Name"
+                                dim: true
+                                font.pixelSize: Theme.font.size.sm
+                                font.weight: Theme.font.weight.bold
+                            }
+
+                            BrutalText {
+                                Layout.fillWidth: true
+                                text: "URL"
+                                dim: true
+                                font.pixelSize: Theme.font.size.sm
+                                font.weight: Theme.font.weight.bold
+                            }
+
+                            BrutalText {
+                                Layout.preferredWidth: 80
+                                text: "Icon"
+                                dim: true
+                                font.pixelSize: Theme.font.size.sm
+                                font.weight: Theme.font.weight.bold
+                            }
+
+                            Item {
+                                // Spacer for the colour and delete columns
+                                Layout.preferredWidth: 38 * 2 + Theme.space.sm
+                            }
+                        }
+
+                        Repeater {
+                            id: links
+
+                            /// Tile colours a link can cycle through.
+                            readonly property var colours: ["blue", "coral", "red", "peach",
+                                "yellow", "green", "mint", "teal", "lavender", "purple", "pink", "grey"]
+
+                            /// Writes one field of one link. Copies the object
+                            /// rather than mutating it: the array is a copy but
+                            /// its elements are the stored ones.
+                            function setField(index: int, key: string, value: string): void {
+                                const arr = Array.from(Settings.data.quickLinks ?? []);
+                                if (!arr[index] || arr[index][key] === value) return;
+                                arr[index] = Object.assign({}, arr[index], { [key]: value });
+                                Settings.data.quickLinks = arr;
+                            }
+
+                            // A count, not the array: saving one field assigns a
+                            // new array, and an array model rebuilds every row —
+                            // dropping focus from the field just clicked into.
+                            model: (Settings.data.quickLinks ?? []).length
+
+                            delegate: RowLayout {
+                                id: linkRow
+
+                                required property int index
+                                readonly property var link: Settings.data.quickLinks[linkRow.index] ?? ({})
+
+                                Layout.fillWidth: true
+                                spacing: Theme.space.sm
+
+                                BrutalTextField {
+                                    Layout.preferredWidth: 100
+                                    text: linkRow.link.name ?? ""
+                                    placeholder: "Name"
+                                    onEdited: val => links.setField(linkRow.index, "name", val)
+                                }
+
+                                BrutalTextField {
+                                    Layout.fillWidth: true
+                                    text: linkRow.link.url ?? ""
+                                    placeholder: "https://"
+                                    onEdited: val => links.setField(linkRow.index, "url", val)
+                                }
+
+                                BrutalTextField {
+                                    Layout.preferredWidth: 80
+                                    text: linkRow.link.icon ?? ""
+                                    placeholder: "Icon"
+                                    onEdited: val => links.setField(linkRow.index, "icon", val)
+                                }
+
+                                // Click to cycle the tile colour.
+                                BrutalButton {
+                                    implicitWidth: 38
+                                    implicitHeight: 38
+                                    radius: Theme.radius.sm
+                                    baseColor: Theme.named(linkRow.link.color ?? "")
+                                    hoverColor: Qt.lighter(baseColor, 1.08)
+                                    onClicked: {
+                                        const at = links.colours.indexOf(linkRow.link.color ?? "");
+                                        links.setField(linkRow.index, "color",
+                                            links.colours[(at + 1) % links.colours.length]);
+                                    }
+                                }
+
+                                BrutalIconButton {
+                                    icon: Icons.close
+                                    size: 38
+                                    onClicked: {
+                                        let arr = Array.from(Settings.data.quickLinks);
+                                        arr.splice(linkRow.index, 1);
+                                        Settings.data.quickLinks = arr;
+                                    }
+                                }
+                            }
+                        }
+
+                        BrutalButton {
+                            Layout.alignment: Qt.AlignHCenter
+                            Layout.topMargin: Theme.space.sm
+                            implicitWidth: 120
+                            implicitHeight: 34
+                            radius: Theme.radius.sm
+                            baseColor: Theme.color.mint
+
+                            RowLayout {
+                                anchors.centerIn: parent
+                                spacing: Theme.space.sm
+                                BrutalIcon { text: Icons.plus }
+                                BrutalText { text: "Add Link"; font.weight: Theme.font.weight.bold }
+                            }
+
+                            onClicked: {
+                                let arr = Array.from(Settings.data.quickLinks ?? []);
+                                // The next colour along, so a run of new tiles
+                                // is not one block of blue. No URL: an empty
+                                // field shows the hint, a bare https:// opens
+                                // nothing.
+                                const colour = links.colours[arr.length % links.colours.length];
+                                arr.push({ name: "New Link", url: "", icon: "browser", color: colour });
+                                Settings.data.quickLinks = arr;
+                            }
+                        }
+                    }
+                }
+
                 // ── Lock ───────────────────────────────────────────────────
                 BrutalCard {
                     Layout.fillWidth: true

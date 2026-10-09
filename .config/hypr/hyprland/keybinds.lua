@@ -11,10 +11,6 @@
 -- default changed here cannot drift apart. Editing this file by hand still
 -- works exactly as before — change a `key`, not an `hl.bind` call.
 
-local terminal = os.getenv("TERMINAL") or "kitty"
-local browser  = os.getenv("BROWSER") or "firefox"
-local files    = "nautilus"
-
 local state_dir = (os.getenv("XDG_STATE_HOME") or (HOME .. "/.local/state"))
     .. "/brutaldots"
 
@@ -95,12 +91,20 @@ add({ id = "shell.restart",    group = "Shell", key = "CTRL + SUPER + R",
       action = hl.dsp.exec_cmd("killall qs; qs -c brutal &") })
 
 -- ── Applications ────────────────────────────────────────────────────────────
+-- The apps chosen in Settings, via the shell. `qs ipc call` exits non-zero
+-- when no shell is running, so the fallback still gets you a terminal to fix
+-- it from — a `global` bind would do nothing at all.
+local function launch(app, fallback)
+    return hl.dsp.exec_cmd((SHELL_IPC or "qs -c brutal ipc call shell")
+        .. " launch " .. app .. " || " .. fallback)
+end
+
 add({ id = "launch.terminal", group = "Launch", key = "SUPER + Return",
-      description = "Terminal", action = hl.dsp.exec_cmd(terminal) })
+      description = "Terminal", action = launch("terminal", "${TERMINAL:-kitty}") })
 add({ id = "launch.browser",  group = "Launch", key = "SUPER + B",
-      description = "Browser",  action = hl.dsp.exec_cmd(browser) })
+      description = "Browser",  action = launch("browser", "${BROWSER:-firefox}") })
 add({ id = "launch.files",    group = "Launch", key = "SUPER + E",
-      description = "Files",    action = hl.dsp.exec_cmd(files) })
+      description = "Files",    action = launch("files", "nautilus") })
 
 -- ── Windows ─────────────────────────────────────────────────────────────────
 add({ id = "window.close",      group = "Window", key = "SUPER + Q",
