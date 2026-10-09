@@ -387,6 +387,15 @@ light is the *absence* of an include, dark is one `include` line.
 `accumulate_bad_lines=[]` — without it, a checker reports success on a broken
 config.
 
+`remember_window_size` defaults to on and covers more than size: kitty saves
+the *state* of the last window closed to `~/.cache/kitty/main.json` and asks
+for it on every new window. Close one maximized and each kitty after it opens
+maximized over the workspace, which reads as the launch binds or the dashboard
+misplacing it — measured nested, kitty came up maximized and Alacritty tiled
+from the same launch. It is off in `brutaldots.conf`, not the starter
+`kitty.conf`, because only the former reaches an install that already had a
+config of its own.
+
 ### fastfetch
 
 `{#...}` emits **raw SGR parameters**, so `{#1}` is *bold*, not colour 1. Hex
