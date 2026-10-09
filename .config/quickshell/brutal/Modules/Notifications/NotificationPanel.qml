@@ -93,16 +93,19 @@ Variants {
                         }
 
                         BrutalPill {
-                            text: Notifications.doNotDisturb ? "DND" : `${Notifications.count}`
-                            color: Notifications.doNotDisturb ? Theme.color.peach : Theme.color.base
+                            text: `${Notifications.count}`
+                            color: Theme.color.base
                             fontSize: Theme.font.size.xs
                             hPadding: Theme.space.sm
+                        }
 
-                            MouseArea {
-                                anchors.fill: parent
-                                cursorShape: Qt.PointingHandCursor
-                                onClicked: Notifications.doNotDisturb = !Notifications.doNotDisturb
-                            }
+                        BrutalIconButton {
+                            icon: Notifications.doNotDisturb ? Icons.bellOff : Icons.bell
+                            size: 26
+                            radius: Theme.radius.sm
+                            baseColor: Notifications.doNotDisturb ? Theme.color.peach : Theme.color.base
+                            hoverColor: Theme.color.peach
+                            onClicked: Notifications.doNotDisturb = !Notifications.doNotDisturb
                         }
 
                         BrutalIconButton {
