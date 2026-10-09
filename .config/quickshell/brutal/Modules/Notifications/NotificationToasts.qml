@@ -15,10 +15,16 @@ Variants {
 
         required property var modelData
 
+        // No latched monitor (Hyprland not answering) falls back to the first
+        // screen rather than every screen.
+        readonly property bool onPopupScreen: Notifications.popupScreen !== ""
+            ? Notifications.popupScreen === win.modelData.name
+            : win.modelData === Quickshell.screens[0]
+
         screen: win.modelData
         // Toasts stay behind the lock screen: they would leak message
         // contents to anyone walking past.
-        visible: Notifications.popups.length > 0 && !ShellState.locked
+        visible: win.onPopupScreen && Notifications.popups.length > 0 && !ShellState.locked
         color: "transparent"
 
         anchors {

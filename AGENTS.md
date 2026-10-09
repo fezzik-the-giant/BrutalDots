@@ -281,6 +281,11 @@ on screen, and leaves it there until the next successful reload.
   has `parent` set to that plain `QQuickItem` and `parent as Flickable` is
   null. Nothing errors; the handler just silently scrolls nothing. Walk up the
   parent chain, the way `BrutalText.inheritedInk` does.
+- **`Notification.expireTimeout` is milliseconds**, despite being a `real`.
+  Quickshell passes the D-Bus value through unconverted. The toast timer used
+  to multiply it by 1000, so `notify-send -t 5000` stayed up for 83 minutes
+  and toasts looked like they never left. Toasts now ignore it and use a fixed
+  `Notifications.popupTimeout`.
 - **`focus` is a FINAL property on `QQuickItem`.** Naming a function `focus`
   gets you `Final member focus is overridden … The override won't be used`, and
   the call silently goes nowhere.

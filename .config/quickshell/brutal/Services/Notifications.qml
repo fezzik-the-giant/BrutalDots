@@ -2,6 +2,7 @@ pragma Singleton
 pragma ComponentBehavior: Bound
 
 import Quickshell
+import Quickshell.Hyprland
 import Quickshell.Services.Notifications
 import QtQuick
 import qs.Config
@@ -25,6 +26,13 @@ Singleton {
 
     /// Currently-visible toasts.
     property list<var> popups: []
+    /// How long a toast stays up, whatever the app asked for. Expiring a toast
+    /// only takes it off screen; the notification stays in the panel.
+    readonly property int popupTimeout: 5000
+    /// Monitor the toasts appear on: whichever was focused when the newest one
+    /// arrived. Latched rather than bound, so the stack does not chase the
+    /// cursor between screens while it is up.
+    property string popupScreen: ""
     property bool doNotDisturb: false
 
     function dismiss(notification): void {
@@ -69,12 +77,14 @@ Singleton {
             if (root.doNotDisturb) return;
 
             root.popups = [notification, ...root.popups].slice(0, 5);
+            root.popupScreen = Hyprland.focusedMonitor?.name ?? "";
+
+            // An app can close its own notification, which destroys the
+            // object; a toast left holding it renders as an empty card.
+            notification.closed.connect(() => root.dismissPopup(notification));
 
             // Age the toast out; the notification itself stays in history.
-            const timeout = notification.expireTimeout > 0
-                ? notification.expireTimeout * 1000
-                : 5000;
-            expiry.createObject(root, { notification, interval: timeout });
+            expiry.createObject(root, { notification, interval: root.popupTimeout });
         }
     }
 
