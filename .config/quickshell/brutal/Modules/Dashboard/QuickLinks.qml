@@ -31,6 +31,8 @@ BrutalCard {
                 hoverColor: Qt.lighter(tile.baseColor, 1.08)
 
                 onClicked: {
+                    // A link just added in Settings has no URL yet.
+                    if (!tile.modelData.url) return;
                     Quickshell.execDetached(["xdg-open", tile.modelData.url]);
                     ShellState.dashboardOpen = false;
                 }

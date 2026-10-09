@@ -100,6 +100,13 @@ ShellRoot {
         function clipboard(): void { ShellState.openLauncher("clipboard"); }
         function lock(): void { ShellState.locked = true; }
 
+        /// Run the app chosen in Settings for a role: terminal, browser,
+        /// files, music, editor or chat.
+        function launch(app: string): void {
+            const command = Settings.data.apps[app];
+            if (typeof command === "string") Apps.run(command);
+        }
+
         /// Expand the now-playing capsule into the mini player.
         function media(): void { ShellState.toggleMedia(); }
 
@@ -257,27 +264,5 @@ ShellRoot {
         name: "pickColour"
         description: "Pick a colour into the clipboard"
         onPressed: Capture.pickColour()
-    }
-
-    // ── Default Applications ───────────────────────────────────────────────
-    GlobalShortcut {
-        appid: "brutaldots"
-        name: "launchTerminal"
-        description: "Launch default terminal"
-        onPressed: Apps.run(Settings.data.apps.terminal)
-    }
-
-    GlobalShortcut {
-        appid: "brutaldots"
-        name: "launchBrowser"
-        description: "Launch default browser"
-        onPressed: Apps.run(Settings.data.apps.browser)
-    }
-
-    GlobalShortcut {
-        appid: "brutaldots"
-        name: "launchFiles"
-        description: "Launch default file manager"
-        onPressed: Apps.run(Settings.data.apps.files)
     }
 }

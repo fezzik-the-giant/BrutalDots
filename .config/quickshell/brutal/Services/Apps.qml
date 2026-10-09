@@ -171,6 +171,25 @@ Singleton {
         entry.execute();
     }
 
+    /// An entry's Exec line as something `run()` can take: the whole line,
+    /// because the first word alone is `flatpak` or `env` for a good share of
+    /// entries, minus the field codes (%U, %f…) that only a launcher fills in.
+    /// Exec quoting is shell-compatible, so the result goes to `sh -c` as is.
+    function commandFor(entry: var): string {
+        return (entry?.execString ?? "")
+            .replace(/(^|\s)%[a-zA-Z](?=\s|$)/g, "")
+            .replace(/%%/g, "%")
+            .trim()
+            .replace(/\s+/g, " ");
+    }
+
+    /// The visible entry whose Exec line is this command, if there is one.
+    function entryForCommand(command: string): var {
+        const needle = (command ?? "").trim();
+        if (needle === "") return null;
+        return root.all.find(entry => root.commandFor(entry) === needle) ?? null;
+    }
+
     /// Run a bare command line, as typed. Quoting is not interpreted: the
     /// string is handed to a shell so `foo && bar` and `~` behave as expected.
     function run(command: string): void {

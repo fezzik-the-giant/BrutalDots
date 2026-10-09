@@ -91,12 +91,20 @@ add({ id = "shell.restart",    group = "Shell", key = "CTRL + SUPER + R",
       action = hl.dsp.exec_cmd("killall qs; qs -c brutal &") })
 
 -- ── Applications ────────────────────────────────────────────────────────────
+-- The apps chosen in Settings, via the shell. `qs ipc call` exits non-zero
+-- when no shell is running, so the fallback still gets you a terminal to fix
+-- it from — a `global` bind would do nothing at all.
+local function launch(app, fallback)
+    return hl.dsp.exec_cmd((SHELL_IPC or "qs -c brutal ipc call shell")
+        .. " launch " .. app .. " || " .. fallback)
+end
+
 add({ id = "launch.terminal", group = "Launch", key = "SUPER + Return",
-      description = "Terminal", action = hl.dsp.global("brutaldots:launchTerminal") })
+      description = "Terminal", action = launch("terminal", "${TERMINAL:-kitty}") })
 add({ id = "launch.browser",  group = "Launch", key = "SUPER + B",
-      description = "Browser",  action = hl.dsp.global("brutaldots:launchBrowser") })
+      description = "Browser",  action = launch("browser", "${BROWSER:-firefox}") })
 add({ id = "launch.files",    group = "Launch", key = "SUPER + E",
-      description = "Files",    action = hl.dsp.global("brutaldots:launchFiles") })
+      description = "Files",    action = launch("files", "nautilus") })
 
 -- ── Windows ─────────────────────────────────────────────────────────────────
 add({ id = "window.close",      group = "Window", key = "SUPER + Q",

@@ -21,6 +21,10 @@ BrutalButton {
     /// The choices, as plain strings.
     property var model: []
     property int currentIndex: 0
+    /// Rows shown before the panel scrolls. A list built from the desktop
+    /// entries can run to dozens, and the panel is anchored below the button,
+    /// so uncapped it runs off the bottom of the screen.
+    property int maxRows: 10
 
     readonly property int count: root.model ? root.model.length : 0
     readonly property string currentText: (root.currentIndex >= 0 && root.currentIndex < root.count)
@@ -81,56 +85,77 @@ BrutalButton {
         implicitWidth: root.width + Theme.shadow.md
         implicitHeight: sheet.implicitHeight + Theme.shadow.md
 
+        readonly property int rowHeight: 26
+        readonly property int rowGap: 2
+
+        // Open on the current choice, not the top of a list it may be
+        // scrolled out of.
+        onVisibleChanged: if (panel.visible) scroller.contentY = Math.max(0,
+            Math.min(root.currentIndex * (panel.rowHeight + panel.rowGap),
+                     scroller.contentHeight - scroller.height))
+
         BrutalBox {
             id: sheet
 
             anchors.left: parent.left
             anchors.top: parent.top
             implicitWidth: root.width
-            implicitHeight: rows.implicitHeight + Theme.space.sm * 2
+            implicitHeight: Math.min(rows.implicitHeight, (panel.rowHeight + panel.rowGap) * root.maxRows - panel.rowGap)
+                + Theme.space.sm * 2
 
             color: Theme.color.base
             radius: Theme.radius.md
             shadowOffset: Theme.shadow.md
 
-            ColumnLayout {
-                id: rows
+            Flickable {
+                id: scroller
 
                 anchors.fill: parent
                 anchors.margins: Theme.space.sm
-                spacing: 2
+                contentHeight: rows.implicitHeight
+                clip: true
+                boundsBehavior: Flickable.StopAtBounds
 
-                Repeater {
-                    model: root.model
+                WheelScroll {}
 
-                    delegate: BrutalButton {
-                        id: row
+                ColumnLayout {
+                    id: rows
 
-                        required property int index
-                        required property var modelData
+                    width: scroller.width
+                    spacing: panel.rowGap
 
-                        Layout.fillWidth: true
-                        implicitHeight: 26
-                        radius: Theme.radius.xs
-                        shadowed: false
-                        border.width: 0
-                        baseColor: row.index === root.currentIndex ? Theme.color.crust : "transparent"
-                        hoverColor: Theme.color.crust
+                    Repeater {
+                        model: root.model
 
-                        onClicked: {
-                            panel.visible = false;
-                            if (row.index === root.currentIndex) return;
-                            root.activated(row.index);
-                        }
+                        delegate: BrutalButton {
+                            id: row
 
-                        BrutalText {
-                            anchors.fill: parent
-                            anchors.leftMargin: Theme.space.sm
-                            anchors.rightMargin: Theme.space.sm
-                            verticalAlignment: Text.AlignVCenter
-                            text: row.modelData
-                            elide: Text.ElideRight
-                            font.family: Theme.font.mono
+                            required property int index
+                            required property var modelData
+
+                            Layout.fillWidth: true
+                            implicitHeight: panel.rowHeight
+                            radius: Theme.radius.xs
+                            shadowed: false
+                            border.width: 0
+                            baseColor: row.index === root.currentIndex ? Theme.color.crust : "transparent"
+                            hoverColor: Theme.color.crust
+
+                            onClicked: {
+                                panel.visible = false;
+                                if (row.index === root.currentIndex) return;
+                                root.activated(row.index);
+                            }
+
+                            BrutalText {
+                                anchors.fill: parent
+                                anchors.leftMargin: Theme.space.sm
+                                anchors.rightMargin: Theme.space.sm
+                                verticalAlignment: Text.AlignVCenter
+                                text: row.modelData
+                                elide: Text.ElideRight
+                                font.family: Theme.font.mono
+                            }
                         }
                     }
                 }
