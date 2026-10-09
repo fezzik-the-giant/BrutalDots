@@ -190,6 +190,18 @@ Startup pushes differ on purpose. Hyprland forgets on every `hyprctl reload`.
 The greeter is pushed because installing while already dark leaves its state
 file saying light. kitty's pointer is a file that persists, so it is not.
 
+The startup push **waits for `Settings.ready`**. `settings.json` loads
+asynchronously, so at `Component.onCompleted` `Theme.dark` is still the default
+`false`. Pushing there sent light to every target, and the correction that
+followed when the file loaded was usually *dropped*: `Greeter.sync()` and
+`Toolkit.sync()` return early while their previous process is still running,
+and the first one still was. So the login screen came up light after most
+boots, and GTK apps stayed on `prefer-light`.
+
+Hence the rule for every `sync()` that runs a process (`Greeter`, `Toolkit`,
+`Terminal`): a call that arrives mid-run sets `pending` and is **replayed** on
+exit, never dropped. The dropped call is always the newer value.
+
 ---
 
 ## Platform quirks

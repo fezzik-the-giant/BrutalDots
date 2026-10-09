@@ -19,9 +19,13 @@ Singleton {
         (Quickshell.env("XDG_CONFIG_HOME") || `${Quickshell.env("HOME")}/.config`)
         + "/kitty"
 
+    // A sync that lands while one is running is replayed when it exits,
+    // rather than dropped: the dropped one would be the newer value.
+    property bool pending: false
+
     /// Point kitty at the palette the shell is currently wearing.
     function sync(): void {
-        if (sync_.running) return;
+        if (sync_.running) { root.pending = true; return; }
         sync_.mode = Theme.dark ? "dark" : "light";
         sync_.running = true;
     }
@@ -59,6 +63,10 @@ Singleton {
             if (code !== 0) {
                 console.warn("Terminal: could not repoint kitty -",
                     syncErr.text.trim() || `exit ${code}`);
+            }
+            if (root.pending) {
+                root.pending = false;
+                Qt.callLater(root.sync);
             }
         }
     }

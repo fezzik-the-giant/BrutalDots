@@ -58,10 +58,23 @@ ShellRoot {
     // The greeter is pushed at startup too, for a different reason — installing
     // the login screen while already in dark mode leaves its state file saying
     // light, and without this you would have to toggle twice to correct it.
-    Component.onCompleted: {
+    //
+    // It waits for `Settings.ready`: settings.json loads asynchronously, so at
+    // `onCompleted` `Theme.dark` is still the default and the push would send
+    // light. See AGENTS.md "Dark mode propagation".
+    function pushPalette(): void {
         Appearance.syncPalette();
         Greeter.sync();
         Toolkit.sync();
+    }
+
+    Component.onCompleted: if (Settings.ready) pushPalette()
+
+    Connections {
+        target: Settings
+        function onReadyChanged(): void {
+            if (Settings.ready) root.pushPalette();
+        }
     }
 
     Connections {

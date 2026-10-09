@@ -20,10 +20,15 @@ Singleton {
 
     readonly property bool enabled: Settings.data.theme.syncApps
 
+    // A sync that lands while one is running is replayed when it exits,
+    // rather than dropped: the dropped one would be the newer value.
+    property bool pending: false
+
     /// Point GTK — and through the portal, most of the rest — at the palette
     /// the shell is currently wearing.
     function sync(): void {
-        if (!root.enabled || sync_.running) return;
+        if (!root.enabled) return;
+        if (sync_.running) { root.pending = true; return; }
         sync_.mode = Theme.dark ? "dark" : "light";
         sync_.running = true;
     }
@@ -63,6 +68,10 @@ Singleton {
             if (code !== 0) {
                 console.warn("Toolkit: could not update the GTK colour scheme -",
                     syncErr.text.trim() || `exit ${code}`);
+            }
+            if (root.pending) {
+                root.pending = false;
+                Qt.callLater(root.sync);
             }
         }
     }
