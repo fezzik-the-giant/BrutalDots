@@ -452,6 +452,26 @@ desktop-shell brings its own panel, background and an **on-screen keyboard**;
 `sddm/weston.ini` turns all three off. That keyboard is separate from Qt's
 (`InputMethod=qtvirtualkeyboard`) — removing one does nothing about the other.
 
+### Idle blanking
+
+`idle-time=0`: weston never blanks the login screen. Its default is 300s, after
+which desktop-shell fades out and powers the outputs off. Waking from that
+crashed weston 15.0.1 on a two-GPU amdgpu machine with
+`weston_output_finish_frame: Assertion 'timespec_sub_to_nsec(stamp,
+&output->frame_time) >= 0' failed` — the first frame after DPMS carried a
+timestamp older than the last one before it.
+
+SDDM does not recover from that. The greeter loses its compositor, SDDM logs
+`Greeter stopped. SDDM::Auth::HELPER_SUCCESS` and starts nothing else, so VT1
+falls back to the text console: black screens, one blinking cursor, and no
+input reaches anything until you switch to another tty. Observed once, in the
+journal of a boot left at the login screen for five minutes; every other boot
+had logged in sooner.
+
+The cost is that the monitors stay lit until login or their own power-saving.
+Revisit when weston moves past 15.0.1 — the crash is weston's, and blanking
+only needs turning back on once waking no longer kills it.
+
 ### Dark mode follows the session
 
 The greeter runs as the `sddm` user and cannot read `$HOME` (`drwx--x---`), so
